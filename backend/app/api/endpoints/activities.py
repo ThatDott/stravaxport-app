@@ -1,22 +1,43 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Header, Query, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Optional, List
 from app.services.activity_service import ActivityService
-from app.core.auth import get_current_user
 from app.schemas.activity import ActivityList, ActivityDetail, GeographicalComparison, ActivitySummary
 
 router = APIRouter()
 
-@router.get("/", response_model=ActivityList)
-async def get_activities(user=Depends(get_current_user)):
-    return await ActivityService.get_user_activities(user.id)
+security = HTTPBearer()
+
+@router.get("")
+async def get_activities(
+    # Extracts the "Authorization: Bearer <token>" from the incoming frontend request
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    before: Optional[int] = Query(None, description="Epoch timestamp"),
+    after: Optional[int] = Query(None, description="Epoch timestamp"),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(30, ge=1, le=200)
+):
+    # Strip the "Bearer " prefix from the authorization header
+    token = credentials.credentials
+    
+    activities = await ActivityService.get_athlete_activities(
+        access_token=token,
+        before=before,
+        after=after,
+        page=page,
+        per_page=per_page
+    )
+    return activities
+
 
 @router.get("/{activity_id}", response_model=ActivityDetail)
-async def get_activity(activity_id: int, user=Depends(get_current_user)):
-    return await ActivityService.get_activity_details(activity_id, user.id)
+async def get_activity(activity_id: int):
+    return await ActivityService.get_activity_details(activity_id)
 
 @router.get("/{activity_id}/comparisons", response_model=GeographicalComparison)
-async def get_activity_comparisons(activity_id: int, user=Depends(get_current_user)):
-    return await ActivityService.get_geographical_comparisons(activity_id, user.id)
+async def get_activity_comparisons(activity_id: int):
+    return await ActivityService.get_geographical_comparisons(activity_id)
 
 @router.get("/{activity_id}/summary", response_model=ActivitySummary)
-async def get_activity_summary(activity_id: int, user=Depends(get_current_user)):
-    return await ActivityService.get_activity_summary(activity_id, user.id)
+async def get_activity_summary(activity_id: int):
+    return await ActivityService.get_activity_summary(activity_id)
