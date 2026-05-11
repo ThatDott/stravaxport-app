@@ -1,6 +1,13 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
+from enum import Enum
+
+class ActivityType(str, Enum):
+    run = "run"
+    ride = "ride"
+    walk = "walk"
+    swim = "swim"
 
 class ActivityBase(BaseModel):
     id: int
@@ -31,8 +38,16 @@ class GeographicalComparison(BaseModel):
     comparison_metrics: dict
 
 class ActivitySummary(BaseModel):
-    activity_id: int
-    total_distance: float
-    total_time: int
-    average_pace: float
-    elevation_stats: dict
+    total_activities: int
+    total_distance_km: float
+    total_moving_time_seconds: int
+    formatted_moving_time: str
+    avg_distance_km: float
+    avg_time_minutes: float
+    avg_pace_formatted: str
+    avg_speed_kmh: float
+    total_elevation_m: float
+    avg_elevation_m: float
+    avg_cadence: Optional[float] = None
+    avg_hr: Optional[float] = None
+    days_active: int
