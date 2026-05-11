@@ -1,43 +1,30 @@
 from fastapi import APIRouter, Header, Query, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional, List
 from app.services.activity_service import ActivityService
 from app.schemas.activity import ActivityList, ActivityDetail, GeographicalComparison, ActivitySummary
+from app.utils.deps import get_token
 
 router = APIRouter()
 
-security = HTTPBearer()
-
 @router.get("")
 async def get_activities(
-    # Extracts the "Authorization: Bearer <token>" from the incoming frontend request
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    access_token: str = Depends(get_token),
     before: Optional[str] = Query(None, description="YYYY-MM-DD"),
     after: Optional[str] = Query(None, description="YYYY-MM-DD"),
     page: int = Query(1, ge=1),
     per_page: int = Query(30, ge=1, le=200)
 ):
-    # Strip the "Bearer " prefix from the authorization header
-    token = credentials.credentials
-    
-    activities = await ActivityService.get_athlete_activities(
-        access_token=token,
-        before=before,
-        after=after,
-        page=page,
-        per_page=per_page
-    )
+    activities = await ActivityService.get_athlete_activities(access_token, before, after, page, per_page)
+
     return activities
 
 
 @router.get("/{activity_id}", response_model=ActivityDetail)
 async def get_activity(
     activity_id: int,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    access_token: str = Depends(get_token),
     
 ):
-    access_token = credentials.credentials
-
     activity = await ActivityService.get_activity_details(access_token, activity_id)
 
     return activity
