@@ -31,8 +31,16 @@ async def get_activities(
 
 
 @router.get("/{activity_id}", response_model=ActivityDetail)
-async def get_activity(activity_id: int):
-    return await ActivityService.get_activity_details(activity_id)
+async def get_activity(
+    activity_id: int,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    
+):
+    access_token = credentials.credentials
+
+    activity = await ActivityService.get_activity_details(access_token, activity_id)
+
+    return activity
 
 @router.get("/{activity_id}/comparisons", response_model=GeographicalComparison)
 async def get_activity_comparisons(activity_id: int):
