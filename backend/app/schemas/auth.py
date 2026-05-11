@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 class StravaAuthURL(BaseModel):
-    auth_url: str
+    url: str
 
 class StravaToken(BaseModel):
     access_token: str
@@ -15,7 +15,3 @@ class User(BaseModel):
     strava_id: Optional[int] = None
     username: Optional[str] = None
     email: Optional[str] = None
-
-class JWTToken(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
