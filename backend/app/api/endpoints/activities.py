@@ -12,8 +12,8 @@ security = HTTPBearer()
 async def get_activities(
     # Extracts the "Authorization: Bearer <token>" from the incoming frontend request
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    before: Optional[int] = Query(None, description="Epoch timestamp"),
-    after: Optional[int] = Query(None, description="Epoch timestamp"),
+    before: Optional[str] = Query(None, description="YYYY-MM-DD"),
+    after: Optional[str] = Query(None, description="YYYY-MM-DD"),
     page: int = Query(1, ge=1),
     per_page: int = Query(30, ge=1, le=200)
 ):

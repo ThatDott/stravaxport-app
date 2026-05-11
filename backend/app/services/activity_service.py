@@ -1,13 +1,14 @@
 import httpx
 from typing import Optional, List
 from fastapi import HTTPException, status
+from app.utils.time_helpers import convert_date_to_epoch
 
 class ActivityService:
     @staticmethod
     async def get_athlete_activities(
         access_token: str,
-        before: Optional[int] = None,
-        after: Optional[int] = None,
+        before: Optional[str] = None,
+        after: Optional[str] = None,
         page: int = 1,
         per_page: int = 30
     ) -> List[dict]:
@@ -25,9 +26,9 @@ class ActivityService:
             "per_page": per_page
         }
         if before is not None:
-            params["before"] = before
+            params["before"] = convert_date_to_epoch(before)
         if after is not None:
-            params["after"] = after
+            params["after"] = convert_date_to_epoch(after)
 
         async with httpx.AsyncClient() as client:
             try:
