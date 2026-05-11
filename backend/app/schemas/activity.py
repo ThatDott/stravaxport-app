@@ -4,10 +4,10 @@ from typing import List, Optional
 from enum import Enum
 
 class ActivityType(str, Enum):
-    run = "Run"
-    ride = "Ride"
-    walk = "Walk"
-    swim = "Swim"
+    run = "run"
+    ride = "ride"
+    walk = "walk"
+    swim = "swim"
 
 class ActivityBase(BaseModel):
     id: int

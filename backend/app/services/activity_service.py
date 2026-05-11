@@ -111,14 +111,17 @@ class ActivityService:
         
         # Filter by activity type if specified
         if activity_type:
-            activities = [a for a in activities if a.get('type') == activity_type]
+            activities = [a for a in activities if a.get('type', '').lower() == activity_type.lower()]
         
         if not activities:
-            return ActivitySummary(
-                total_activities=0, total_distance_km=0.0, total_moving_time_seconds=0,
-                formatted_moving_time="0h 0m", avg_distance_km=0.0, avg_time_minutes=0.0,
-                avg_pace_formatted="0:00/km", avg_speed_kmh=0.0, total_elevation_m=0.0,
-                avg_elevation_m=0.0, streak_days=0
+            if activity_type:
+                message = f"No {activity_type.lower()} activities found for the specified date range"
+            else:
+                message = "No activities found for the specified date range"
+            
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=message
             )
         
         # Convert and calculate metrics
