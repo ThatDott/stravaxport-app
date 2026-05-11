@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Header, Query, Depends
 from typing import Optional, List
 from app.services.activity_service import ActivityService
-from app.schemas.activity import ActivityList, ActivityDetail, GeographicalComparison, ActivitySummary
+from app.schemas.activity import ActivityList, ActivityDetail, GeographicalComparison, ActivitySummary, ActivityType
 from app.utils.deps import get_token
 
 router = APIRouter()
@@ -18,6 +18,14 @@ async def get_activities(
 
     return activities
 
+@router.get("/summary", response_model=ActivitySummary)
+async def get_activities_summary(
+    access_token: str = Depends(get_token),
+    before: Optional[str] = Query(None, description="YYYY-MM-DD"),
+    after: Optional[str] = Query(None, description="YYYY-MM-DD"),
+    activity_type: Optional[ActivityType] = Query(None, description="Filter by activity type")
+):
+    return await ActivityService.get_activity_summary(access_token, before, after, activity_type)
 
 @router.get("/{activity_id}", response_model=ActivityDetail)
 async def get_activity(
@@ -32,7 +40,3 @@ async def get_activity(
 @router.get("/{activity_id}/comparisons", response_model=GeographicalComparison)
 async def get_activity_comparisons(activity_id: int):
     return await ActivityService.get_geographical_comparisons(activity_id)
-
-@router.get("/{activity_id}/summary", response_model=ActivitySummary)
-async def get_activity_summary(activity_id: int):
-    return await ActivityService.get_activity_summary(activity_id)
