@@ -1,12 +1,34 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { AuthService } from './core/auth.service';
+import { AuthWallComponent } from './shared/auth-wall.component';
+import { DashboardComponent } from './features/dashboard.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [AuthWallComponent, DashboardComponent],
+  template: `
+    @if (authService.isAuthenticated()) {
+      <app-dashboard />
+    } @else {
+      <app-auth-wall />
+    }
+  `
 })
-export class App {
-  protected readonly title = signal('frontend');
+export class App implements OnInit {
+  authService = inject(AuthService);
+  
+  ngOnInit(): void {
+    // Handle callback directly in app component
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+      console.log('Found code in URL:', code);
+      this.authService.handleCallback(code).then(() => {
+        // Clean URL after processing
+        window.history.replaceState({}, document.title, window.location.pathname);
+      });
+    }
+  }
 }

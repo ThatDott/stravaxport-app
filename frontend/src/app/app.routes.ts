@@ -1,3 +1,19 @@
 import { Routes } from '@angular/router';
+import { AuthCallbackComponent } from './shared/auth-callback.component';
+import { Component } from '@angular/core';
 
-export const routes: Routes = [];
+@Component({
+  template: ''
+})
+class EmptyComponent {}
+
+export const routes: Routes = [
+  {
+    path: 'auth/callback',
+    component: AuthCallbackComponent
+  },
+  {
+    path: '',
+    component: EmptyComponent
+  }
+];
