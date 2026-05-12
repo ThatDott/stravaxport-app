@@ -13,8 +13,7 @@ def login_with_strava():
     auth_url = AuthService.get_strava_auth_url()
     return {"url": auth_url}
 
-
-@router.get("/callback", response_model=StravaToken)
+@router.post("/callback", response_model=StravaToken)
 async def strava_callback(code: str = Query(...)):
     """
     Step 2: Strava sends the user back here with ?code=xyz.

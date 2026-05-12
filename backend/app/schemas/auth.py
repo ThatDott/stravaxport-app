@@ -7,8 +7,8 @@ class StravaAuthURL(BaseModel):
 
 class StravaToken(BaseModel):
     access_token: str
-    refresh_token: str
-    expires_at: int
+    refresh_token: Optional[str] = None
+    expires_at: Optional[int] = None
 
 class User(BaseModel):
     id: str
