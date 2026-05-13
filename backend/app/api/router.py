@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.endpoints import auth, activities, export, quotes, health, insights
+from app.api.endpoints import auth, activities, export, quotes, health, insights, users
 
 api_router = APIRouter()
 
@@ -9,3 +9,4 @@ api_router.include_router(export.router, prefix="/export", tags=["export"])
 api_router.include_router(quotes.router, prefix="/quotes", tags=["quotes"])
 api_router.include_router(health.router, prefix="/health", tags=["health"])
 api_router.include_router(insights.router, prefix="/insights", tags=["insights"])
+api_router.include_router(users.router, prefix="/users", tags=["users"])

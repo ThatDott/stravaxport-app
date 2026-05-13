@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     STRAVA_CLIENT_SECRET: str
     STRAVA_REDIRECT_URI: str
     
+    DATABASE_URL: str
+
     class Config:
         env_file = ".env"
 

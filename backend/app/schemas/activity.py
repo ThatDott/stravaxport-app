@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from enum import Enum
 
 class ActivityType(str, Enum):
@@ -51,3 +51,19 @@ class ActivitySummary(BaseModel):
     avg_cadence: Optional[float] = None
     avg_hr: Optional[float] = None
     days_active: int
+
+# Database schemas
+class ActivityCreate(BaseModel):
+    strava_activity_id: str
+    strava_id: str
+    raw_data: Optional[Dict[str, Any]] = None
+    metrics: Optional[Dict[str, Any]] = None
+
+class ActivityResponse(BaseModel):
+    strava_activity_id: str
+    strava_id: str
+    raw_data: Optional[Dict[str, Any]] = None
+    metrics: Optional[Dict[str, Any]] = None
+    
+    class Config:
+        from_attributes = True
