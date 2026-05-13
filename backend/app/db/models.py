@@ -34,3 +34,12 @@ class AIInsight(Base):
     
     user = relationship("User", back_populates="ai_insights")
     activity = relationship("Activity", back_populates="ai_insights")
+    
+class DailyQuoteCache(Base):
+    __tablename__ = "daily_quote_cache"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    quote = Column(String, nullable=False)
+    author = Column(String, nullable=False)
+    keyword = Column(String, nullable=False)
+    cached_date = Column(String, nullable=False)
