@@ -22,6 +22,7 @@ export class App implements OnInit {
     // Handle callback directly in app component
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
+    const error = urlParams.get('error');
     
     if (code) {
       console.log('Found code in URL:', code);
@@ -29,6 +30,10 @@ export class App implements OnInit {
         // Clean URL after processing
         window.history.replaceState({}, document.title, window.location.pathname);
       });
+    } else if (error) {
+      console.log('User cancelled or error occurred:', error);
+      // Clean URL and stay on auth wall
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }
 }
