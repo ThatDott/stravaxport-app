@@ -19,3 +19,18 @@ class InsightResponse(BaseModel):
     insights: List[AIInsight]
     generated_at: datetime
     period_compared: str
+
+# Database schemas
+class AIInsightCreate(BaseModel):
+    strava_id: str
+    activity_id: str
+    insight: str
+
+class AIInsightResponse(BaseModel):
+    id: int
+    strava_id: str
+    activity_id: str
+    insight: str
+    
+    class Config:
+        from_attributes = True
