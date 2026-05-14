@@ -6,10 +6,10 @@ from app.core.auth import get_current_user
 from app.schemas.export import ExportRequest, ExportResponse
 from app.services.export_service import ExportService
 
-router = APIRouter(prefix="/export", tags=["Exports"])
+router = APIRouter(tags=["Exports"])
 
 @router.post("/image", response_model=ExportResponse)
-def create_export_image(
+async def create_export_image(
     request: ExportRequest,
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
@@ -25,7 +25,7 @@ def create_export_image(
     - include_stats: Whether to include activity statistics
     """
     service = ExportService(db=db)
-    return service.generate_export(request, user_id=current_user["id"])
+    return await service.generate_export(request, user_id=current_user["id"])
 
 @router.get("/history", response_model=list)
 def get_export_history(
