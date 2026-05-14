@@ -1,0 +1,19 @@
+# .dockerignore
+# Backend
+backend/__pycache__/
+backend/*.pyc
+backend/.venv/
+backend/.env
+backend/stravaxport.db
+backend/static/exports/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Git & IDE
+.git/
+.idea/
+.vscode/
+*.md
