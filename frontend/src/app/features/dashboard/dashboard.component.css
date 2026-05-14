@@ -235,17 +235,24 @@
   }
 
   .nav-list {
+<<<<<<< HEAD
     grid-template-columns: repeat(3, minmax(0, 1fr));
+=======
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+>>>>>>> 4901d72 (feat: add dashboard and calendar UI)
   }
 
   .hero-header {
     align-items: flex-start;
     flex-direction: column;
   }
+<<<<<<< HEAD
 
   .feature-grid {
     grid-template-columns: 1fr;
   }
+=======
+>>>>>>> 4901d72 (feat: add dashboard and calendar UI)
 }
 
 @media (max-width: 42rem) {
@@ -269,8 +276,11 @@
   .connection-pill {
     font-size: 0.82rem;
   }
+<<<<<<< HEAD
 
   .nav-list {
     grid-template-columns: 1fr;
   }
+=======
+>>>>>>> 4901d72 (feat: add dashboard and calendar UI)
 }
