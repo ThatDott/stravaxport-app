@@ -1,0 +1,242 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.calendar-card {
+  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  box-shadow: var(--shadow-card);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 350px;
+  max-height: 350px;
+  overflow: hidden;
+  padding: clamp(0.7rem, 1.5vw, 1rem);
+  width: 100%;
+}
+
+.card-header {
+  margin-bottom: 0.55rem;
+}
+
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.title-icon {
+  color: var(--accent);
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+}
+
+.title-icon svg,
+.icon-button svg {
+  fill: none;
+  height: 1.15rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  width: 1.15rem;
+}
+
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h2 {
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+
+.card-header p {
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin-top: 0.15rem;
+}
+
+.calendar-shell {
+  background: color-mix(in srgb, var(--secondary) 44%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: var(--radius-lg);
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  min-height: 0;
+  padding: clamp(0.45rem, 1.2vw, 0.65rem);
+  width: 100%;
+}
+
+.month-bar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.month-bar h3 {
+  color: var(--foreground);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.icon-button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  color: var(--foreground);
+  cursor: pointer;
+  display: inline-flex;
+  height: 1.9rem;
+  justify-content: center;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+  width: 1.9rem;
+}
+
+.icon-button:hover {
+  background: color-mix(in srgb, var(--secondary) 72%, transparent);
+  border-color: color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+.weekday-grid,
+.day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: clamp(0.16rem, 0.7vw, 0.34rem);
+}
+
+.weekday-grid {
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  line-height: 1;
+  margin-bottom: 0.28rem;
+  text-align: center;
+}
+
+.weekday-grid span {
+  padding-block: 0.2rem;
+}
+
+.day-grid {
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  min-height: 0;
+}
+
+.day-button,
+.day-cell {
+  border-radius: clamp(0.42rem, 1.3vw, 0.72rem);
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.day-button {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: clamp(0.68rem, 1.6vw, 0.82rem);
+  font-weight: 650;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
+}
+
+.day-button:hover {
+  background: color-mix(in srgb, var(--secondary) 88%, var(--accent) 12%);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.day-button.in-range {
+  background: color-mix(in srgb, var(--accent) 18%, var(--secondary));
+  color: var(--foreground);
+}
+
+.day-button.range-edge {
+  background: var(--accent);
+  box-shadow: var(--shadow-glow);
+  color: var(--accent-foreground);
+}
+
+.day-button.pending-start {
+  outline: 2px solid color-mix(in srgb, var(--accent) 85%, white);
+  outline-offset: 2px;
+}
+
+.day-button.today:not(.range-edge) {
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.preset-grid {
+  display: grid;
+  gap: 0.4rem;
+  grid-template-columns: repeat(4, minmax(min(7rem, 100%), 1fr));
+  margin-top: 0.55rem;
+  width: 100%;
+}
+
+.preset-button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.74rem;
+  font-weight: 650;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0.25rem 0.55rem;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.preset-button:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--foreground);
+}
+
+.preset-button.active-preset {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.icon-button:focus-visible,
+.day-button:focus-visible,
+.preset-button:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+@media (max-width: 42rem) {
+  .calendar-card {
+    padding: 1rem;
+  }
+
+  .preset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
