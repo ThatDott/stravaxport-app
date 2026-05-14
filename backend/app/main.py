@@ -1,11 +1,28 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from app.api.router import api_router
 from app.core.config import settings
+from app.db.database import engine
+
+# Added lifespan as a nice-to-have startup check — not required for the app to work.
+# It verifies the DB is reachable the moment the server boots, so a misconfigured
+# DATABASE_URL or a stopped Docker container fails immediately with a clear error
+# rather than silently on the first request that hits the DB.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.connect() as conn:
+        await conn.execute(text("SELECT 1"))
+    print("✓ Database connection established")
+    yield
+    await engine.dispose()
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    version=settings.VERSION
+    version=settings.VERSION,
+    lifespan=lifespan
 )
 
 app.add_middleware(
