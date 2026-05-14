@@ -1,6 +1,6 @@
-import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 interface StravaToken {
@@ -9,70 +9,133 @@ interface StravaToken {
   expires_at?: number;
 }
 
+interface StravaAuthUrl {
+  url: string;
+}
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-  private http = inject(HttpClient);
-  private platformId = inject(PLATFORM_ID);
+  private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
 
   private readonly API_BASE = 'http://localhost:8000/auth';
   private readonly TOKEN_KEY = 'strava_token';
+  private readonly PREVIEW_KEY = 'stravaxport_dashboard_preview';
 
-  isAuthenticated = signal(false);
+  readonly isAuthenticated = signal(false);
+  readonly isConnecting = signal(false);
+  readonly statusMessage = signal('');
 
   constructor() {
     this.checkAuthStatus();
   }
 
-  private checkAuthStatus(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const token = localStorage.getItem(this.TOKEN_KEY);
-      this.isAuthenticated.set(!!token);
+  async loginWithStrava(): Promise<void> {
+    if (!this.isBrowser()) {
+      return;
+    }
+
+    this.isConnecting.set(true);
+    this.statusMessage.set('Opening Strava authorization...');
+
+    try {
+      const response = await firstValueFrom(this.http.get<StravaAuthUrl>(`${this.API_BASE}/login`));
+
+      if (response?.url) {
+        window.location.href = response.url;
+        return;
+      }
+
+      this.statusMessage.set('The backend did not return a Strava login URL.');
+    } catch {
+      this.statusMessage.set('Backend is not running on port 8000. Use Preview dashboard while working on the frontend.');
+    } finally {
+      this.isConnecting.set(false);
     }
   }
 
   async handleCallback(code: string): Promise<void> {
-    console.log('Handling callback with code:', code);
     try {
-      const response = await firstValueFrom(this.http.post<StravaToken>(`${this.API_BASE}/callback?code=${code}`, {}));
-      console.log('Token response:', response);
-      if (response?.access_token && isPlatformBrowser(this.platformId)) {
+      const response = await firstValueFrom(
+        this.http.post<StravaToken>(`${this.API_BASE}/callback?code=${encodeURIComponent(code)}`, {}),
+      );
+
+      if (response?.access_token && this.isBrowser()) {
         localStorage.setItem(this.TOKEN_KEY, JSON.stringify(response));
+        localStorage.removeItem(this.PREVIEW_KEY);
         this.isAuthenticated.set(true);
-        console.log('Token saved, authenticated:', this.isAuthenticated());
       }
-    } catch (error) {
-      console.error('Token exchange failed:', error);
+    } catch {
+      this.statusMessage.set('Could not complete Strava login. Please try again.');
     }
   }
 
-  async loginWithStrava(): Promise<void> {
-    try {
-      const response = await firstValueFrom(this.http.get<{ url: string }>(`${this.API_BASE}/login`));
-      if (response?.url) {
-        window.location.href = response.url;
-      }
-    } catch (error) {
-      console.error('Login failed:', error);
+  enterPreviewDashboard(): void {
+    if (this.isBrowser()) {
+      localStorage.setItem(this.PREVIEW_KEY, 'active');
     }
+
+    this.isAuthenticated.set(true);
+    this.statusMessage.set('');
   }
 
   logout(): void {
-    if (isPlatformBrowser(this.platformId)) {
+    if (this.isBrowser()) {
       localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.PREVIEW_KEY);
     }
+
     this.isAuthenticated.set(false);
+    this.statusMessage.set('');
   }
 
   getToken(): string | null {
-    if (!isPlatformBrowser(this.platformId)) return null;
+    if (!this.isBrowser()) {
+      return null;
+    }
 
     const tokenData = localStorage.getItem(this.TOKEN_KEY);
-    if (tokenData) {
-      const parsed = JSON.parse(tokenData);
-      return parsed.access_token;
+    if (!tokenData) {
+      return null;
     }
-    return null;
+
+    try {
+      const parsed: unknown = JSON.parse(tokenData);
+
+      return isStravaToken(parsed) ? parsed.access_token : null;
+    } catch {
+      return null;
+    }
   }
+
+  private checkAuthStatus(): void {
+    if (!this.isBrowser()) {
+      return;
+    }
+
+    const previewRequested = new URLSearchParams(window.location.search).get('preview') === 'dashboard';
+    if (previewRequested) {
+      localStorage.setItem(this.PREVIEW_KEY, 'active');
+    }
+
+    const hasToken = localStorage.getItem(this.TOKEN_KEY) !== null;
+    const hasPreview = localStorage.getItem(this.PREVIEW_KEY) === 'active';
+    this.isAuthenticated.set(hasToken || hasPreview);
+  }
+
+  private isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
+  }
+}
+
+function isStravaToken(value: unknown): value is StravaToken {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const token = value as Record<string, unknown>;
+
+  return typeof token['access_token'] === 'string' && token['access_token'].length > 0;
 }

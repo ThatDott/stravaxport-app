@@ -1,0 +1,89 @@
+<section class="calendar-card" id="date-range" aria-labelledby="date-range-title">
+  <header class="card-header">
+    <div class="title-row">
+      <span class="title-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M8 2v4M16 2v4M3 10h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
+        </svg>
+      </span>
+      <div>
+        <h2 id="date-range-title">Date Range</h2>
+        <p>{{ rangeLabel() }}</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="calendar-shell">
+    <div class="month-bar">
+      <button
+        class="icon-button"
+        type="button"
+        aria-label="Show previous month"
+        (click)="selectPreviousMonth()"
+      >
+        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+      </button>
+
+      <h3 id="calendar-month-label">{{ monthLabel() }}</h3>
+
+      <button
+        class="icon-button"
+        type="button"
+        aria-label="Show next month"
+        (click)="selectNextMonth()"
+      >
+        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="weekday-grid" aria-hidden="true">
+      @for (weekday of weekdayLabels; track $index) {
+        <span>{{ weekday }}</span>
+      }
+    </div>
+
+    <div class="day-grid" role="grid" aria-labelledby="calendar-month-label">
+      @for (cell of calendarCells(); track cell.key) {
+        @if (cell.date; as day) {
+          <button
+            class="day-button"
+            type="button"
+            role="gridcell"
+            [class.in-range]="isInSelectedRange(day)"
+            [class.range-edge]="isRangeEndpoint(day)"
+            [class.pending-start]="isPendingStart(day)"
+            [class.today]="isToday(day)"
+            [attr.aria-label]="dayAriaLabel(day)"
+            [attr.aria-current]="isToday(day) ? 'date' : null"
+            [attr.aria-pressed]="isInSelectedRange(day)"
+            (click)="selectDay(day)"
+          >
+            {{ cell.label }}
+          </button>
+        } @else {
+          <span class="day-cell is-empty" aria-hidden="true"></span>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="preset-grid" aria-label="Date range presets">
+    @for (preset of presets; track preset.key) {
+      <button
+        class="preset-button"
+        type="button"
+        [class.active-preset]="selectedPreset() === preset.key"
+        [attr.aria-pressed]="selectedPreset() === preset.key"
+        (click)="selectPreset(preset.key)"
+      >
+        {{ preset.label }}
+      </button>
+    }
+  </div>
+
+  <p class="sr-only" aria-live="polite">{{ assistiveRangeLabel() }}</p>
+</section>

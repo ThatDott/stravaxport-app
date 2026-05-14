@@ -1,3 +1,65 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+:root {
+  color-scheme: dark;
+
+  --radius-sm: 0.625rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  --background: oklch(0.16 0.03 265);
+  --foreground: oklch(0.94 0.01 260);
+  --card: oklch(0.21 0.035 268);
+  --muted: oklch(0.26 0.03 268);
+  --muted-foreground: oklch(0.73 0.02 260);
+  --primary: oklch(0.45 0.08 270);
+  --primary-foreground: oklch(0.97 0.005 260);
+  --secondary: oklch(0.29 0.055 268);
+  --accent: oklch(0.79 0.17 220);
+  --accent-foreground: oklch(0.13 0.03 265);
+  --success: oklch(0.74 0.17 160);
+  --border: oklch(0.33 0.04 270 / 60%);
+  --ring: oklch(0.79 0.17 220);
+
+  --font-sans: 'Maison Neue', Inter, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --shadow-card: 0 1px 0 oklch(1 0 0 / 4%) inset, 0 18px 40px -28px oklch(0 0 0 / 75%);
+  --shadow-glow: 0 0 30px oklch(0.79 0.17 220 / 28%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+  min-height: 100%;
+}
+
+body {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 20%, transparent), transparent 34%),
+    linear-gradient(100deg, var(--background), color-mix(in srgb, var(--background) 84%, var(--accent)) 140%);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  margin: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+a {
+  color: inherit;
+}

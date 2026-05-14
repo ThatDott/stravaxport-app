@@ -1,142 +1,161 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AuthService } from '../core/auth.service';
 
 @Component({
   selector: 'app-auth-wall',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="auth-wall">
-      <div class="auth-container">
-        <h1>StravaXport</h1>
-        <p>Transform your Strava activities into shareable social content</p>
-        
-        @if (!authService.isAuthenticated()) {
-          <button 
-            class="strava-connect-btn"
-            (click)="connectToStrava()"
-            type="button"
-            aria-label="Connect to Strava to access your activities">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.599h4.172L10.463 0l-7 13.828h4.172"/>
-            </svg>
+    <main class="auth-wall" aria-labelledby="auth-title">
+      <section class="auth-panel">
+        <p class="eyebrow">StravaXport</p>
+        <h1 id="auth-title">Connect your Strava account</h1>
+        <p class="intro">Use Strava when the backend is running, or preview the dashboard while building the frontend.</p>
+
+        <button
+          class="primary-action"
+          type="button"
+          [disabled]="authService.isConnecting()"
+          (click)="connectToStrava()"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+            <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.599h4.172L10.463 0l-7 13.828h4.172" />
+          </svg>
+          @if (authService.isConnecting()) {
+            Opening Strava
+          } @else {
             Connect to Strava
-          </button>
-        } @else {
-          <div class="connected-state">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-            </svg>
-            <span>Connected to Strava</span>
-            <button 
-              class="disconnect-btn"
-              (click)="disconnect()"
-              type="button"
-              aria-label="Disconnect from Strava">
-              Disconnect
-            </button>
-          </div>
+          }
+        </button>
+
+        <button class="secondary-action" type="button" (click)="previewDashboard()">
+          Preview dashboard
+        </button>
+
+        @if (authService.statusMessage()) {
+          <p class="status-message" role="status">{{ authService.statusMessage() }}</p>
         }
-      </div>
-    </div>
+      </section>
+    </main>
   `,
   styles: [`
+    :host {
+      display: block;
+    }
+
     .auth-wall {
-      display: flex;
       align-items: center;
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--primary) 22%, transparent), transparent 38%),
+        var(--background);
+      color: var(--foreground);
+      display: flex;
       justify-content: center;
       min-height: 100vh;
-      background: linear-gradient(135deg, #fc4c02 0%, #e34402 100%);
-      color: white;
+      padding: 1.5rem;
     }
-    
-    .auth-container {
-      text-align: center;
-      padding: 2rem;
-      max-width: 400px;
+
+    .auth-panel {
+      background: color-mix(in srgb, var(--card) 88%, transparent);
+      border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-card);
+      max-width: 30rem;
+      padding: clamp(1.5rem, 4vw, 2.4rem);
+      width: 100%;
     }
-    
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      font-weight: 700;
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 750;
+      letter-spacing: 0.28em;
+      margin: 0 0 0.8rem;
+      text-transform: uppercase;
     }
-    
+
+    h1,
     p {
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
-      opacity: 0.9;
+      margin: 0;
     }
-    
-    .strava-connect-btn {
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.05;
+    }
+
+    .intro,
+    .status-message {
+      color: var(--muted-foreground);
+      font-size: 1rem;
+      line-height: 1.65;
+      margin-top: 1rem;
+    }
+
+    .primary-action,
+    .secondary-action {
+      align-items: center;
+      border-radius: 999px;
+      cursor: pointer;
       display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: white;
-      color: #fc4c02;
-      border: none;
-      padding: 1rem 2rem;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      font-weight: 750;
+      gap: 0.6rem;
+      justify-content: center;
+      min-height: 3rem;
+      padding: 0.75rem 1.1rem;
+      transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+      width: 100%;
     }
-    
-    .strava-connect-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+
+    .primary-action {
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      color: var(--accent-foreground);
+      margin-top: 1.6rem;
     }
-    
-    .strava-connect-btn:focus {
-      outline: 2px solid white;
-      outline-offset: 2px;
+
+    .primary-action:hover:not(:disabled),
+    .secondary-action:hover {
+      transform: translateY(-1px);
     }
-    
-    .connected-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
+
+    .primary-action:disabled {
+      cursor: progress;
+      opacity: 0.74;
     }
-    
-    .connected-state svg {
-      color: #4caf50;
+
+    .primary-action svg {
+      height: 1.2rem;
+      width: 1.2rem;
     }
-    
-    .connected-state span {
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-    
-    .disconnect-btn {
+
+    .secondary-action {
       background: transparent;
-      color: white;
-      border: 2px solid white;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9rem;
+      border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+      color: var(--foreground);
+      margin-top: 0.75rem;
     }
-    
-    .disconnect-btn:hover {
-      background: white;
-      color: #fc4c02;
+
+    .secondary-action:hover {
+      border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+      color: var(--accent);
     }
-    
-    .disconnect-btn:focus {
-      outline: 2px solid white;
-      outline-offset: 2px;
+
+    .primary-action:focus-visible,
+    .secondary-action:focus-visible {
+      outline: 3px solid var(--ring);
+      outline-offset: 3px;
     }
-  `]
+  `],
 })
 export class AuthWallComponent {
-  authService = inject(AuthService);
-  
+  readonly authService = inject(AuthService);
+
   connectToStrava(): void {
-    this.authService.loginWithStrava();
+    void this.authService.loginWithStrava();
   }
-  
-  disconnect(): void {
-    this.authService.logout();
+
+  previewDashboard(): void {
+    this.authService.enterPreviewDashboard();
   }
 }
