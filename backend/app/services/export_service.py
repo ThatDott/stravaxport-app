@@ -1,27 +1,29 @@
-# app/services/export_service.py
 import os
 import uuid
 import io
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from fastapi import HTTPException, status
 
 from app.db.models import Activity, Export as ExportModel
 from app.schemas.export import ExportRequest, ExportResponse
 
 class ExportService:
-    def __init__(self, db: Session, storage_dir: str = "static/exports"):
+    def __init__(self, db: AsyncSession, storage_dir: str = "static/exports"):
         self.db = db
         self.storage_dir = storage_dir
         os.makedirs(self.storage_dir, exist_ok=True)
 
-    def generate_export(self, request: ExportRequest, user_id: str) -> ExportResponse:
-        # 1. Query activity (Strava IDs are strings in your DB)
-        activity = self.db.query(Activity).filter(
+    async def generate_export(self, request: ExportRequest, user_id: str) -> ExportResponse:
+        stmt = select(Activity).where(
             Activity.strava_activity_id == str(request.activity_id),
-            Activity.strava_id == user_id  # user_id from JWT is the Strava ID
-        ).first()
+            Activity.strava_id == user_id  # user_id from JWT matches strava_id
+        )
+        
+        result = await self.db.execute(stmt)
+        activity = result.scalar_one_or_none()
 
         if not activity:
             raise HTTPException(
@@ -29,7 +31,7 @@ class ExportService:
                 detail="Activity not found or you don't have permission to access it"
             )
 
-        # 2. Safely extract metrics from JSON
+        # Extract metrics from JSON
         metrics = activity.metrics or {}
         distance_km = float(metrics.get("distance_km", 0))
         duration_seconds = int(metrics.get("duration_seconds", 0))
@@ -37,7 +39,7 @@ class ExportService:
         elevation_gain_m = float(metrics.get("elevation_gain_m", 0))
         activity_name = (activity.raw_data or {}).get("name", f"Activity #{request.activity_id}")
 
-        # 3. Generate image
+        # Generate image (Sync logic using PIL)
         image_bytes = self._build_image(
             width=request.width,
             height=request.height,
@@ -50,7 +52,7 @@ class ExportService:
             activity_name=activity_name
         )
 
-        # 4. Save to disk
+        # Save to disk
         filename = f"{request.activity_id}_{uuid.uuid4().hex[:8]}.{request.format}"
         file_path = os.path.join(self.storage_dir, filename)
         
@@ -60,7 +62,7 @@ class ExportService:
         file_size = len(image_bytes)
         image_url = f"/static/exports/{filename}"
 
-        # 5. Record export in database
+        # Save record to DB (Async commit)
         export_record = ExportModel(
             activity_id=str(request.activity_id),
             user_id=user_id,
@@ -69,8 +71,10 @@ class ExportService:
             format=request.format,
             created_at=datetime.utcnow()
         )
+        
         self.db.add(export_record)
-        self.db.commit()
+        await self.db.commit()  
+        await self.db.refresh(export_record)
 
         return ExportResponse(
             image_url=image_url,
