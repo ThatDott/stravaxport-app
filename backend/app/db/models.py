@@ -1,5 +1,6 @@
 from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, JSON
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from app.db.database import Base
 
 class User(Base):
@@ -43,3 +44,14 @@ class DailyQuoteCache(Base):
     author = Column(String, nullable=False)
     keyword = Column(String, nullable=False)
     cached_date = Column(String, nullable=False)
+
+class Export(Base):
+    __tablename__ = "exports"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    activity_id = Column(String, ForeignKey("activities.strava_activity_id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.strava_id"), nullable=False)
+    image_url = Column(String, nullable=False)
+    file_size = Column(Integer)
+    format = Column(String(10))
+    created_at = Column(DateTime, default=datetime.utcnow)
