@@ -1,10 +1,12 @@
 import { isPlatformBrowser, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
 import { AuthService } from '../../core/auth.service';
+import { AiInsightsComponent } from '../ai-insights/ai-insights.component';
+import { MOCK_AI_INSIGHTS_RESPONSE } from '../ai-insights/ai-insights.mock-data';
 import { CalendarComponent, DateRange } from '../calendar/calendar.component';
 import { MOCK_DASHBOARD_USER, createMockInitialDateRange } from './dashboard.mock-data';
 
-type DashboardSection = 'dashboard' | 'calendar';
+type DashboardSection = 'dashboard' | 'calendar' | 'ai-insights';
 
 interface SidebarItem {
   section: DashboardSection;
@@ -15,11 +17,12 @@ interface SidebarItem {
 const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { section: 'dashboard', href: '#dashboard-home', label: 'Dashboard' },
   { section: 'calendar', href: '#calendar-section', label: 'Calendar' },
+  { section: 'ai-insights', href: '#ai-insights-section', label: 'AI Insights' },
 ];
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CalendarComponent, NgOptimizedImage],
+  imports: [AiInsightsComponent, CalendarComponent, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
@@ -32,6 +35,7 @@ export class DashboardComponent implements OnInit {
   readonly userProfile = signal(MOCK_DASHBOARD_USER);
   readonly activeSection = signal<DashboardSection>('dashboard');
   readonly selectedRange = signal<DateRange>(createMockInitialDateRange());
+  readonly aiInsights = signal(MOCK_AI_INSIGHTS_RESPONSE);
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) {
@@ -70,5 +74,13 @@ function startOfDay(date: Date): Date {
 }
 
 function sectionFromHash(hash: string): DashboardSection {
-  return hash === '#calendar-section' ? 'calendar' : 'dashboard';
+  if (hash === '#calendar-section') {
+    return 'calendar';
+  }
+
+  if (hash === '#ai-insights-section') {
+    return 'ai-insights';
+  }
+
+  return 'dashboard';
 }
