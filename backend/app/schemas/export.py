@@ -11,7 +11,7 @@ class ExportRequest(BaseModel):
 
     @field_validator("width", "height")
     @classmethod
-    def validate_dimensions(cls, value):
+    def validate_dimensions(cls, v):
         if v < 400 or v>4096:
             raise ValueError("Dimensions must be between 400 and 4096 pixels.")
         return v
