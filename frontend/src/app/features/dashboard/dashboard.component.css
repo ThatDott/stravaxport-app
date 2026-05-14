@@ -201,8 +201,19 @@
   width: 100%;
 }
 
-.calendar-feature-row {
-  max-width: 42rem;
+.feature-grid {
+  align-items: stretch;
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.6rem);
+  grid-template-columns: minmax(0, 7fr) minmax(18rem, 3fr);
+  max-width: 92rem;
+  scroll-margin-top: 1.25rem;
+  width: 100%;
+}
+
+.calendar-feature,
+.ai-insights-feature {
+  min-width: 0;
   scroll-margin-top: 1.25rem;
   width: 100%;
 }
@@ -218,12 +229,16 @@
   }
 
   .nav-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .hero-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -247,5 +262,9 @@
 
   .connection-pill {
     font-size: 0.82rem;
+  }
+
+  .nav-list {
+    grid-template-columns: 1fr;
   }
 }
