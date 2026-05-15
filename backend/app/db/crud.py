@@ -1,9 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from datetime import datetime
 from app.db.models import User, Activity, AIInsight
 from app.schemas.user import UserCreate
 from app.schemas.activity import ActivityCreate
-from app.schemas.insight import AIInsightCreate
+
+
+# ---------------------------------------------------------------------------
+# User operations
+# ---------------------------------------------------------------------------
 
 async def create_user(db: AsyncSession, user: UserCreate):
     db_user = User(**user.model_dump())
@@ -12,9 +17,15 @@ async def create_user(db: AsyncSession, user: UserCreate):
     await db.refresh(db_user)
     return db_user
 
+
 async def get_user(db: AsyncSession, strava_id: str):
     result = await db.execute(select(User).where(User.strava_id == strava_id))
     return result.scalar_one_or_none()
+
+
+# ---------------------------------------------------------------------------
+# Activity operations
+# ---------------------------------------------------------------------------
 
 async def create_activity(db: AsyncSession, activity: ActivityCreate):
     db_activity = Activity(**activity.model_dump())
@@ -23,21 +34,72 @@ async def create_activity(db: AsyncSession, activity: ActivityCreate):
     await db.refresh(db_activity)
     return db_activity
 
+
 async def get_activities(db: AsyncSession, strava_id: str):
     result = await db.execute(select(Activity).where(Activity.strava_id == strava_id))
     return result.scalars().all()
 
-async def create_ai_insight(db: AsyncSession, insight: AIInsightCreate):
-    db_insight = AIInsight(**insight.model_dump())
-    db.add(db_insight)
-    await db.commit()
-    await db.refresh(db_insight)
-    return db_insight
-
-async def get_ai_insights(db: AsyncSession, strava_id: str):
-    result = await db.execute(select(AIInsight).where(AIInsight.strava_id == strava_id))
-    return result.scalars().all()
 
 async def get_activity_by_id(db: AsyncSession, activity_id: str):
     result = await db.execute(select(Activity).where(Activity.strava_activity_id == activity_id))
     return result.scalar_one_or_none()
+
+
+# ---------------------------------------------------------------------------
+# Cache-aware insight operations
+# ---------------------------------------------------------------------------
+
+async def get_cached_insight(db: AsyncSession, strava_id: str):
+    """
+    Returns the cached AIInsight row for this user, or None if it doesn't exist.
+    The caller checks is_valid to decide whether to serve from cache or regenerate.
+    """
+    result = await db.execute(
+        select(AIInsight).where(AIInsight.strava_id == strava_id)
+    )
+    return result.scalar_one_or_none()
+
+
+async def upsert_insight(db: AsyncSession, strava_id: str, insights: list, geo_comparison: str, generated_at: datetime):
+    """
+    Creates or updates the cached insight set for this user.
+    Stores insights and geo_comparison together as a dict in the JSON column:
+    { "insights": [...], "geo_comparison": "..." }
+    - If no row exists: inserts a new one.
+    - If a row exists: updates the payload, generated_at, and resets is_valid to True.
+    Called by InsightService after a fresh Gemini response is received.
+    """
+    # Pack both fields into a single dict for the JSON column
+    payload = {"insights": insights, "geo_comparison": geo_comparison}
+
+    existing = await get_cached_insight(db, strava_id)
+
+    if existing:
+        # Update existing cache row with fresh Gemini output
+        existing.insights = payload
+        existing.generated_at = generated_at
+        existing.is_valid = True
+    else:
+        # First time generating insights for this user
+        new_insight = AIInsight(
+            strava_id=strava_id,
+            insights=payload,
+            generated_at=generated_at,
+            is_valid=True
+        )
+        db.add(new_insight)
+
+    await db.commit()
+
+
+async def invalidate_insight(db: AsyncSession, strava_id: str):
+    """
+    Marks the cached insight as stale by setting is_valid=False.
+    Called by sync_activities_to_db whenever new activities are saved,
+    ensuring the next login triggers a fresh Gemini call.
+    """
+    existing = await get_cached_insight(db, strava_id)
+
+    if existing:
+        existing.is_valid = False
+        await db.commit()
