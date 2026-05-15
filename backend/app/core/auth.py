@@ -1,16 +1,15 @@
 from fastapi import HTTPException, Depends
-from fastapi.security import HTTPBearer
-from jose import JWTError, jwt
-from app.core.config import settings
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.db.models import User
+from app.db.database import get_db
+from app.utils.deps import get_token
 
-security = HTTPBearer()
-
-async def get_current_user(token: str = Depends(security)):
-    try:
-        payload = jwt.decode(token.credentials, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return {"id": user_id}
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+async def get_current_user(token: str = Depends(get_token), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).where(User.access_token == token))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid access token")
+    
+    return user.strava_id

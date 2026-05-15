@@ -6,6 +6,10 @@ from app.db.database import get_db
 from app.db import crud
 from app.services.auth_service import AuthService
 from app.schemas.auth import StravaAuthURL, StravaToken
+from app.db.database import get_db
+from app.db import crud
+from app.schemas.user import UserCreate
+from datetime import datetime
 
 # WARNING: The following import is for development/testing purposes only. Do NOT include in production.
 from datetime import datetime, timedelta
@@ -33,21 +37,29 @@ async def strava_callback(
     then returns the tokens to the frontend.
     """
     tokens = await AuthService.handle_strava_callback(code)
-
-    # Upsert the user so the users table always has a row for this strava_id.
-    # This must happen before any other table (e.g. ai_insights) tries to
-    # insert a row with strava_id as a foreign key.
-    strava_id = tokens.get("strava_id", "")
-    if strava_id:
-        await crud.upsert_user(
-            db=db,
-            strava_id=strava_id,
+    
+    # Get user info from Strava to get strava_id
+    user_info = await AuthService.get_strava_user_info(tokens["access_token"])
+    
+    # Check if user exists
+    existing_user = await crud.get_user(db, str(user_info["id"]))
+    
+    if existing_user:
+        # Update existing user's tokens
+        existing_user.access_token = tokens["access_token"]
+        existing_user.refresh_token = tokens["refresh_token"]
+        existing_user.token_expires_at = datetime.fromtimestamp(tokens["expires_at"])
+        await db.commit()
+    else:
+        # Create new user
+        user_data = UserCreate(
+            strava_id=str(user_info["id"]),
             access_token=tokens["access_token"],
             refresh_token=tokens["refresh_token"],
-            # Strava returns expires_at as a Unix timestamp — convert to datetime
             token_expires_at=datetime.fromtimestamp(tokens["expires_at"])
         )
-
+        await crud.create_user(db, user_data)
+    
     return tokens
 
 #WARNING: This endpoint is for development/testing purposes only. Do NOT include in production.
