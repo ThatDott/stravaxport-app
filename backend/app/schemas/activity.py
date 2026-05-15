@@ -33,9 +33,11 @@ class ActivityList(BaseModel):
     total: int
 
 class GeographicalComparison(BaseModel):
-    location: str
-    similar_activities: List[Activity]
-    comparison_metrics: dict
+    activity_id: int
+    distance_km: float                          
+    elevation_m: float                         
+    distance_comparison: Optional[str] = None   
+    elevation_comparison: Optional[str] = None  
 
 class ActivitySummary(BaseModel):
     total_activities: int
