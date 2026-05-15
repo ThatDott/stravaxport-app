@@ -42,8 +42,11 @@ async def get_activity(
     return activity
 
 @router.get("/{activity_id}/comparisons", response_model=GeographicalComparison)
-async def get_activity_comparisons(activity_id: int):
-    return await ActivityService.get_geographical_comparisons(activity_id)
+async def get_activity_comparisons(
+    activity_id: int,
+    access_token: str = Depends(get_token)
+):
+    return await ActivityService.get_geographical_comparisons(access_token, activity_id)
 
 @router.post("/sync/{strava_id}")
 async def sync_activities_to_db(
