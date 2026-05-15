@@ -21,7 +21,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str
 
     # Quotes
-    ZENQUOTES_API_URL: str = "https://zenquotes.io/api"
+    QUOTES_API_URL: str
+    QUOTES_API_KEY: str
 
     # AI Insights
     GEMINI_API_KEY: str = ""

@@ -1,4 +1,5 @@
 import requests
+import httpx
 from urllib.parse import urlencode
 from fastapi import HTTPException, status
 from app.core.config import settings
@@ -49,6 +50,20 @@ class AuthService:
             "refresh_token": data.get("refresh_token"),
             "expires_at": data.get("expires_at")
         }
+
+    @staticmethod
+    async def get_strava_user_info(access_token: str) -> dict:
+        """
+        Gets user info from Strava API using access token.
+        """
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://www.strava.com/api/v3/athlete",
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
+            response.raise_for_status()
+            return response.json()
 
     @staticmethod
     async def handle_strava_callback(code: str) -> dict:

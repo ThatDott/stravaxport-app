@@ -39,7 +39,9 @@ class DailyQuoteCache(Base):
     __tablename__ = "daily_quote_cache"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    strava_id = Column(String, ForeignKey("users.strava_id"), nullable=False)
     quote = Column(String, nullable=False)
     author = Column(String, nullable=False)
-    keyword = Column(String, nullable=False)
-    cached_date = Column(String, nullable=False)
+    date = Column(String, nullable=False)
+    
+    user = relationship("User")
