@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str
 
+    # Quotes
+    QUOTES_API_URL: str
+    QUOTES_API_KEY: str
+
     # AI Insights
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.0-flash"
