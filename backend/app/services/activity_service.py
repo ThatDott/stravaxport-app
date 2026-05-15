@@ -2,7 +2,8 @@ import httpx
 from typing import Optional, List
 from fastapi import HTTPException, status
 from app.utils.time_helpers import convert_date_to_epoch
-from app.schemas.activity import ActivitySummary
+from app.schemas.activity import ActivitySummary, GeographicalComparison
+from app.services.geo_data import get_distance_comparison, get_elevation_comparison
 from datetime import datetime
 
 class ActivityService:
@@ -95,9 +96,30 @@ class ActivityService:
                 )
     
     @staticmethod
-    async def get_geographical_comparisons(activity_id: int, user_id: str):
-        # Implementation for geographical comparisons
-        pass
+    async def get_geographical_comparisons(access_token: str, activity_id: int) -> GeographicalComparison:
+        """
+        Fetches a single activity from Strava and produces Philippine geographical
+        comparison sentences for its distance and elevation using the geo dataset.
+        Both comparisons are optional - if a metric is zero or missing, the
+        corresponding field is omitted from the response.
+        """
+        activity = await ActivityService.get_activity_details(access_token, activity_id)
+
+        distance_m = activity.get("distance", 0)
+        distance_km = round(distance_m / 1000, 2) if distance_m else 0
+        elevation_m = round(activity.get("total_elevation_gain", 0), 1)
+
+        # Only produce a comparison if the metric is present and non-zero
+        distance_comparison = get_distance_comparison(distance_km) if distance_km > 0 else None
+        elevation_comparison = get_elevation_comparison(elevation_m) if elevation_m > 0 else None
+
+        return GeographicalComparison(
+            activity_id=activity_id,
+            distance_km=distance_km,
+            elevation_m=elevation_m,
+            distance_comparison=distance_comparison,
+            elevation_comparison=elevation_comparison
+        )
     
     @staticmethod
     async def get_activity_summary(
