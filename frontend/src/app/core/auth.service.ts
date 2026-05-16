@@ -20,7 +20,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
 
-  private readonly API_BASE = 'http://localhost:8000/auth';
+  private readonly API_BASE = 'http://localhost:8000/api/v1/auth';
   private readonly TOKEN_KEY = 'strava_token';
   private readonly PREVIEW_KEY = 'stravaxport_dashboard_preview';
 
