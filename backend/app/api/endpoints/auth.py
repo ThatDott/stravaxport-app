@@ -1,5 +1,9 @@
 from fastapi import APIRouter, Query, Depends
 from fastapi.responses import RedirectResponse
+from datetime import datetime
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.database import get_db
+from app.db import crud
 from app.services.auth_service import AuthService
 from app.schemas.auth import StravaAuthURL, StravaToken
 
@@ -19,12 +23,31 @@ def login_with_strava():
     return {"url": auth_url}
 
 @router.post("/callback", response_model=StravaToken)
-async def strava_callback(code: str = Query(...)):
+async def strava_callback(
+    code: str = Query(...),
+    db: AsyncSession = Depends(get_db)
+):
     """
     Step 2: Strava sends the user back here with ?code=xyz.
-    This exchanges the code and returns the tokens to the frontend.
+    Exchanges the code for tokens, upserts the user into the DB,
+    then returns the tokens to the frontend.
     """
     tokens = await AuthService.handle_strava_callback(code)
+
+    # Upsert the user so the users table always has a row for this strava_id.
+    # This must happen before any other table (e.g. ai_insights) tries to
+    # insert a row with strava_id as a foreign key.
+    strava_id = tokens.get("strava_id", "")
+    if strava_id:
+        await crud.upsert_user(
+            db=db,
+            strava_id=strava_id,
+            access_token=tokens["access_token"],
+            refresh_token=tokens["refresh_token"],
+            # Strava returns expires_at as a Unix timestamp — convert to datetime
+            token_expires_at=datetime.fromtimestamp(tokens["expires_at"])
+        )
+
     return tokens
 
 #WARNING: This endpoint is for development/testing purposes only. Do NOT include in production.

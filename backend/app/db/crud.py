@@ -23,6 +23,29 @@ async def get_user(db: AsyncSession, strava_id: str):
     return result.scalar_one_or_none()
 
 
+async def upsert_user(db: AsyncSession, strava_id: str, access_token: str, refresh_token: str, token_expires_at):
+    """
+    Creates a new user or updates their tokens if they already exist.
+    Called on every successful OAuth callback so tokens stay current
+    and the users table always has a row before ai_insights tries to insert.
+    """
+    existing = await get_user(db, strava_id)
+
+    if existing:
+        existing.access_token = access_token
+        existing.refresh_token = refresh_token
+        existing.token_expires_at = token_expires_at
+    else:
+        db.add(User(
+            strava_id=strava_id,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_expires_at=token_expires_at
+        ))
+
+    await db.commit()
+
+
 # ---------------------------------------------------------------------------
 # Activity operations
 # ---------------------------------------------------------------------------
