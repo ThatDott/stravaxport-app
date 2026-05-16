@@ -6,6 +6,8 @@ from sqlalchemy import text
 from app.api.router import api_router
 from app.core.config import settings
 from app.db.database import engine
+from fastapi.staticfiles import StaticFiles
+import os
 
 
 # Added lifespan as a nice-to-have startup check — not required for the app to work.
@@ -26,6 +28,10 @@ app = FastAPI(
     version=settings.VERSION,
     lifespan=lifespan
 )
+
+# Mount the static exports directory to serve generated images. Ensure the directory exists.
+os.makedirs("static/exports", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
