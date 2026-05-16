@@ -58,8 +58,11 @@ Here is their aggregated performance data across all recorded activities:
 {geo_context}
 
 Generate exactly 3 insights. These 3 must be the most meaningful and impactful observations
-you can derive from this data. Each insight must be one sentence, specific to their numbers,
-and written in a natural coaching tone - direct, encouraging, and precise.
+you can derive from this data. Each insight must be short and under 15 words.
+Write like an encouraging coach who celebrates small wins - warm, specific, never demanding.
+Observe and affirm what the athlete has done, not what they must do.
+Framing must be positive - lead with achievement, not gap.
+No compound sentences. No "and" to join two ideas.
 
 Select your 3 by strictly following this priority:
 1. A trend or measurable change in their performance (pace, speed, elevation, distance)
