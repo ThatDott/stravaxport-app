@@ -47,7 +47,8 @@ class AuthService:
         return {
             "access_token": data.get("access_token"),
             "refresh_token": data.get("refresh_token"),
-            "expires_at": data.get("expires_at")
+            "expires_at": data.get("expires_at"),
+            "strava_id": str(data.get("athlete", {}).get("id", ""))
         }
 
     @staticmethod
