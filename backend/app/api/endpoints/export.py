@@ -8,7 +8,7 @@ from app.services.export_service import ExportService
 
 router = APIRouter(tags=["Exports"])
 
-@router.post("/export/upload", response_model=ExportResponse)
+@router.post("/upload", response_model=ExportResponse)
 async def upload_export_image(
     file: UploadFile = File(...),
     activity_id: int = Form(...),

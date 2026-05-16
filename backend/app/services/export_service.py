@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy import select
 
-from app.models import Activity, Export as ExportModel
+from app.db.models import Activity, Export as ExportModel
 from app.schemas.export import ExportResponse
 
 class ExportService:
