@@ -219,7 +219,8 @@
   width: 100%;
 }
 
-.quote-feature-row {
+.quote-feature-row,
+.overview-feature-row {
   max-width: 92rem;
   width: 100%;
 }
@@ -235,7 +236,7 @@
   }
 
   .nav-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .hero-header {

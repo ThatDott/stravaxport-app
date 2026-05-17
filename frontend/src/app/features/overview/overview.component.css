@@ -1,0 +1,164 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.overview-card {
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  color: var(--foreground);
+  display: grid;
+  gap: 1.45rem;
+  padding: clamp(1rem, 2vw, 1.6rem);
+  width: 100%;
+}
+
+.overview-header,
+.title-row,
+.metric-label,
+.metric-value-row,
+.trend-icon {
+  align-items: center;
+  display: flex;
+}
+
+.overview-header {
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.title-row {
+  gap: 0.85rem;
+}
+
+.title-icon,
+.metric-icon {
+  color: var(--accent);
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.title-icon svg {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+h2,
+p {
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.2rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.overview-header p {
+  color: var(--muted-foreground);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin-top: 0.25rem;
+}
+
+.trend-icon svg {
+  height: 0.9rem;
+  width: 0.9rem;
+}
+
+.metric-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.metric-card {
+  align-items: center;
+  background: color-mix(in srgb, var(--secondary) 58%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  border-radius: var(--radius-lg);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  min-height: 5rem;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.metric-label {
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  font-weight: 650;
+  gap: 0.45rem;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.metric-icon svg {
+  height: 1rem;
+  width: 1rem;
+}
+
+.metric-value-row {
+  gap: 0.55rem;
+  justify-content: space-between;
+  text-align: right;
+}
+
+.metric-value-row strong {
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.8vw, 1.55rem);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.trend-icon {
+  color: var(--success);
+  justify-content: center;
+}
+
+.encouragement {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 45%, transparent);
+  border-radius: var(--radius-lg);
+  color: var(--success);
+  font-size: 1rem;
+  line-height: 1.5;
+  padding: 0.7rem 1rem;
+}
+
+@media (max-width: 82rem) {
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 62rem) {
+  .overview-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .metric-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 42rem) {
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+}
