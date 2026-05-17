@@ -192,7 +192,6 @@ h2 {
   font-size: 0.74rem;
   font-weight: 650;
   justify-content: center;
-  min-height: 2rem;
   padding: 0.25rem 0.55rem;
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
