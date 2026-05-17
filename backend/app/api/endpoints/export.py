@@ -24,5 +24,5 @@ async def upload_export_image(
     return await service.save_export(
         file=file,
         activity_id=activity_id,
-        user_id=current_user["id"]
+        user_id=current_user
     )
