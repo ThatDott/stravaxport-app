@@ -53,7 +53,7 @@ class DailyQuoteCache(Base):
     strava_id = Column(String, ForeignKey("users.strava_id"), nullable=False)
     quote = Column(String, nullable=False)
     author = Column(String, nullable=False)
-    date = Column(String, nullable=False)
+    cached_date = Column(String, nullable=False)
     
     user = relationship("User")
 
