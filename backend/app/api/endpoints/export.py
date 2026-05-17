@@ -6,7 +6,7 @@ from app.core.auth import get_current_user
 from app.schemas.export import ExportResponse
 from app.services.export_service import ExportService
 
-router = APIRouter(tags=["Exports"])
+router = APIRouter()
 
 @router.post("/upload", response_model=ExportResponse)
 async def upload_export_image(
