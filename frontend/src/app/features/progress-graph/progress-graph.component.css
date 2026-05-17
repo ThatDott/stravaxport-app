@@ -88,6 +88,14 @@ h2 {
   width: 100%;
 }
 
+.series-layer {
+  color: var(--accent);
+}
+
+.series-layer.ride-series {
+  color: #f97316;
+}
+
 .grid-line {
   fill: none;
   stroke: color-mix(in srgb, var(--muted-foreground) 28%, transparent);
@@ -96,7 +104,8 @@ h2 {
 }
 
 .area-path {
-  fill: url(#progress-area-gradient);
+  fill: currentColor;
+  opacity: 0.2;
 }
 
 .line-path {
@@ -152,7 +161,9 @@ h2 {
 .summary-card {
   align-content: start;
   display: grid;
-  gap: 1.35rem;
+  gap: 1rem;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  overflow: hidden;
 }
 
 .summary-list {
@@ -176,8 +187,83 @@ dd {
   text-align: right;
 }
 
+.summary-toggle-group {
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: 999px;
+  display: grid;
+  gap: 0.3rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 0.3rem;
+}
+
+.summary-toggle {
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 760;
+  min-height: 2.15rem;
+  padding: 0.35rem 0.8rem;
+  text-transform: uppercase;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.summary-toggle:hover {
+  color: var(--foreground);
+}
+
+.summary-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.active-summary-toggle {
+  background: var(--accent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 34%, transparent);
+  color: var(--accent-foreground);
+}
+
+.summary-toggle:nth-child(2).active-summary-toggle {
+  background: #f97316;
+  box-shadow: 0 0 18px color-mix(in srgb, #f97316 34%, transparent);
+  color: #0f172a;
+}
+
+.summary-video-frame {
+  --summary-video-focus-x: 50%;
+  --summary-video-focus-y: 82%;
+  --summary-video-zoom: 1.16;
+  align-self: end;
+  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  border-radius: var(--radius-lg);
+  display: block;
+  height: clamp(7rem, 14vw, 10rem);
+  overflow: hidden;
+  width: 100%;
+}
+
+.summary-video {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--summary-video-focus-x) var(--summary-video-focus-y);
+  transform: scale(var(--summary-video-zoom));
+  transform-origin: var(--summary-video-focus-x) var(--summary-video-focus-y);
+  width: 100%;
+}
+
 @media (max-width: 72rem) {
   .progress-layout {
     grid-template-columns: 1fr;
+  }
+
+  .summary-video-frame {
+    height: clamp(8rem, 34vw, 14rem);
   }
 }

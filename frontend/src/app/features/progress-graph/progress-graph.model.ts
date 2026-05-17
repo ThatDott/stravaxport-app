@@ -9,6 +9,8 @@ export interface ProgressPoint {
   label: string;
   rangeLabel: string;
   distanceKm: number;
+  walkDistanceKm: number;
+  rideDistanceKm: number;
 }
 
 export interface ProgressSummary {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import type { DateRange } from '../calendar/calendar.component';
 import type { ProgressActivityType, ProgressGraphData, ProgressPoint } from './progress-graph.model';
@@ -10,6 +10,14 @@ interface ChartPoint extends ProgressPoint {
   distanceLabel: string;
   tooltipX: number;
   tooltipY: number;
+}
+
+interface ChartSeries {
+  key: Exclude<ProgressActivityType, 'all'>;
+  label: string;
+  areaPath: string;
+  linePath: string;
+  points: readonly ChartPoint[];
 }
 
 const EMPTY_PROGRESS: ProgressGraphData = {
@@ -34,10 +42,11 @@ export class ProgressGraphComponent {
 
   readonly range = input.required<DateRange>();
   readonly selectedActivity = input.required<ProgressActivityType>();
+  readonly activityChange = output<ProgressActivityType>();
   readonly progress = signal<ProgressGraphData>(EMPTY_PROGRESS);
   readonly isLoading = signal(false);
 
-  readonly chart = computed(() => buildChart(this.progress().points));
+  readonly chart = computed(() => buildChart(this.progress().points, this.selectedActivity()));
   readonly summary = computed(() => this.progress().summary);
   readonly subtitle = computed(() => `Weekly distance - ${this.progress().points.length} weeks`);
 
@@ -61,6 +70,19 @@ export class ProgressGraphComponent {
     return `${hours}h ${minutes}m`;
   }
 
+  playSummaryVideo(event: Event): void {
+    const video = event.target;
+
+    if (video instanceof HTMLVideoElement) {
+      video.muted = true;
+      void video.play().catch(() => undefined);
+    }
+  }
+
+  toggleActivity(activity: ProgressActivityType): void {
+    this.activityChange.emit(activity);
+  }
+
   private async loadProgress(range: DateRange, activity: ProgressActivityType): Promise<void> {
     const currentRequestId = this.requestId + 1;
     this.requestId = currentRequestId;
@@ -77,40 +99,74 @@ export class ProgressGraphComponent {
   }
 }
 
-function buildChart(points: readonly ProgressPoint[]): {
-  areaPath: string;
-  linePath: string;
-  points: readonly ChartPoint[];
+function buildChart(
+  points: readonly ProgressPoint[],
+  activityType: ProgressActivityType,
+): {
+  series: readonly ChartSeries[];
+  labels: readonly ChartPoint[];
   yGrid: readonly number[];
 } {
   const top = 10;
   const bottom = 86;
   const left = 10;
   const right = 250;
-  const maxDistance = Math.max(...points.map((point) => point.distanceKm), 1);
-  const chartPoints = points.map((point, index) => {
+  const seriesKeys: Array<Exclude<ProgressActivityType, 'all'>> =
+    activityType === 'all' ? ['walk', 'ride'] : [activityType];
+  const visibleKeys = seriesKeys.filter((key) => points.some((point) => getSeriesDistance(point, key) > 0));
+  const maxDistance = Math.max(
+    ...visibleKeys.flatMap((key) => points.map((point) => getSeriesDistance(point, key))),
+    1,
+  );
+  const labels = buildSeriesPoints(points, 'walk', maxDistance, top, bottom, left, right);
+  const series = visibleKeys.map((key) => {
+    const seriesPoints = buildSeriesPoints(points, key, maxDistance, top, bottom, left, right);
+    const linePath = seriesPoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+    const areaPath = seriesPoints.length
+      ? `${linePath} L ${seriesPoints[seriesPoints.length - 1]?.x ?? right} ${bottom} L ${seriesPoints[0]?.x ?? left} ${bottom} Z`
+      : '';
+
+    return {
+      key,
+      label: key === 'walk' ? 'Walking' : 'Biking',
+      areaPath,
+      linePath,
+      points: seriesPoints,
+    };
+  });
+
+  return {
+    series,
+    labels,
+    yGrid: [12, 36, 60, 86],
+  };
+}
+
+function buildSeriesPoints(
+  points: readonly ProgressPoint[],
+  key: Exclude<ProgressActivityType, 'all'>,
+  maxDistance: number,
+  top: number,
+  bottom: number,
+  left: number,
+  right: number,
+): readonly ChartPoint[] {
+  return points.map((point, index) => {
+    const distanceKm = getSeriesDistance(point, key);
     const x = points.length === 1 ? (left + right) / 2 : left + ((right - left) / (points.length - 1)) * index;
-    const y = bottom - (point.distanceKm / maxDistance) * (bottom - top);
+    const y = bottom - (distanceKm / maxDistance) * (bottom - top);
 
     return {
       ...point,
       x,
       y,
-      distanceLabel: `${point.distanceKm.toFixed(1)} km`,
+      distanceLabel: `${distanceKm.toFixed(1)} km`,
       tooltipX: index === 0 ? 16 : index === points.length - 1 ? -16 : 0,
       tooltipY: y < 28 ? 18 : 0,
     };
   });
+}
 
-  const linePath = chartPoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
-  const areaPath = chartPoints.length
-    ? `${linePath} L ${chartPoints[chartPoints.length - 1]?.x ?? right} ${bottom} L ${chartPoints[0]?.x ?? left} ${bottom} Z`
-    : '';
-
-  return {
-    areaPath,
-    linePath,
-    points: chartPoints,
-    yGrid: [12, 36, 60, 86],
-  };
+function getSeriesDistance(point: ProgressPoint, key: Exclude<ProgressActivityType, 'all'>): number {
+  return key === 'walk' ? point.walkDistanceKm : point.rideDistanceKm;
 }
