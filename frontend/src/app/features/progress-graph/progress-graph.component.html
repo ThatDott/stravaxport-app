@@ -1,0 +1,98 @@
+<section class="progress-section" aria-labelledby="progress-title">
+  <div class="progress-layout">
+    <article class="graph-card" aria-labelledby="progress-title">
+      <header class="progress-header">
+        <div class="title-row">
+          <span class="title-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="m4 16 5-5 4 4 7-8" />
+              <path d="M16 7h4v4" />
+            </svg>
+          </span>
+          <div>
+            <h2 id="progress-title">Progress – Improvement Trend</h2>
+            <p>{{ subtitle() }}</p>
+          </div>
+        </div>
+      </header>
+
+      <div class="chart-frame" [class.loading-chart]="isLoading()">
+        <svg viewBox="0 0 260 100" role="img" [attr.aria-label]="'Weekly distance trend for ' + summary().rangeLabel">
+          <defs>
+            <linearGradient id="progress-area-gradient" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="currentColor" stop-opacity="0.42" />
+              <stop offset="100%" stop-color="currentColor" stop-opacity="0.08" />
+            </linearGradient>
+          </defs>
+
+          @for (line of chart().yGrid; track line) {
+            <path class="grid-line" [attr.d]="'M 10 ' + line + ' H 250'" />
+          }
+
+          @if (chart().areaPath) {
+            <path class="area-path" [attr.d]="chart().areaPath" />
+            <path class="line-path" [attr.d]="chart().linePath" />
+          }
+
+          @for (point of chart().points; track point.label) {
+            <g class="point-group">
+              <circle class="point-glow" [attr.cx]="point.x" [attr.cy]="point.y" r="2.8" />
+              <circle class="point-dot" [attr.cx]="point.x" [attr.cy]="point.y" r="1.2" />
+              <g
+                class="point-tooltip"
+                [attr.transform]="'translate(' + (point.x + point.tooltipX) + ' ' + (point.y + point.tooltipY) + ')'"
+              >
+                <rect x="-30" y="-20" width="60" height="17" rx="2.5" />
+                <text x="0" y="-13">{{ point.rangeLabel }}</text>
+                <text x="0" y="-6">{{ point.distanceLabel }}</text>
+              </g>
+            </g>
+          }
+
+          @for (point of chart().points; track point.label) {
+            <text class="x-label" [attr.x]="point.x" y="94">{{ point.label }}</text>
+          }
+        </svg>
+      </div>
+    </article>
+
+    <aside class="summary-card" aria-labelledby="progress-summary-title">
+      <header class="summary-header">
+        <span class="title-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M4 19V5" />
+            <path d="M4 19h16" />
+            <path d="M8 17V9" />
+            <path d="M12 17V6" />
+            <path d="M16 17v-4" />
+            <path d="M20 17V8" />
+          </svg>
+        </span>
+        <h2 id="progress-summary-title">Summary</h2>
+      </header>
+
+      <dl class="summary-list">
+        <div>
+          <dt>Total Activities</dt>
+          <dd>{{ summary().totalActivities }}</dd>
+        </div>
+        <div>
+          <dt>Total Distance</dt>
+          <dd>{{ summary().totalDistanceKm.toFixed(1) }} km</dd>
+        </div>
+        <div>
+          <dt>Total Time</dt>
+          <dd>{{ formatMovingTime(summary().totalMovingTimeSeconds) }}</dd>
+        </div>
+        <div>
+          <dt>Total Elevation</dt>
+          <dd>{{ summary().totalElevationM }} m</dd>
+        </div>
+        <div>
+          <dt>Range</dt>
+          <dd>{{ summary().rangeLabel }}</dd>
+        </div>
+      </dl>
+    </aside>
+  </div>
+</section>

@@ -118,7 +118,7 @@
   --color-white: #eaecf2;
   --color-gray: #6d717f;
 
-  --background: var(--color-black);
+  --background: color-mix(in srgb, var(--color-secondary) 36%, var(--color-black));
   --foreground: var(--color-white);
   --card: color-mix(in srgb, var(--color-secondary) 72%, var(--color-black));
   --muted: var(--color-secondary);

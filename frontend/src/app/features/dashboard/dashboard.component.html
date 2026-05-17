@@ -61,6 +61,12 @@
                 <path d="M20 17V8" />
               </svg>
             }
+            @case ('progress') {
+              <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                <path d="m4 16 5-5 4 4 7-8" />
+                <path d="M16 7h4v4" />
+              </svg>
+            }
           }
           <span>{{ item.label }}</span>
         </a>
@@ -104,6 +110,11 @@
         (mouseenter)="setActiveSection('calendar')"
         (focusin)="setActiveSection('calendar')"
       >
+        <app-activity-toggle
+          [selectedActivity]="selectedActivity()"
+          (activityChange)="selectActivity($event)"
+        />
+
         <app-calendar [range]="selectedRange()" (rangeChange)="updateDateRange($event)" />
       </div>
 
@@ -128,7 +139,17 @@
       (mouseenter)="setActiveSection('overview')"
       (focusin)="setActiveSection('overview')"
     >
-      <app-overview [range]="selectedRange()" />
+      <app-overview [range]="selectedRange()" [activity]="selectedActivity()" />
+    </section>
+
+    <section
+      id="progress-section"
+      class="progress-feature-row"
+      aria-label="Progress improvement trend"
+      (mouseenter)="setActiveSection('progress')"
+      (focusin)="setActiveSection('progress')"
+    >
+      <app-progress-graph [range]="selectedRange()" [selectedActivity]="selectedActivity()" />
     </section>
   </main>
 </div>
