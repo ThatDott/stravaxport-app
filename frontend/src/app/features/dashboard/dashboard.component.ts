@@ -1,6 +1,7 @@
 import { isPlatformBrowser, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
 import { AuthService } from '../../core/auth.service';
+import { ActivitiesComponent } from '../activities/activities.component';
 import { AiInsightsComponent } from '../ai-insights/ai-insights.component';
 import { MOCK_AI_INSIGHTS_RESPONSE } from '../ai-insights/ai-insights.mock-data';
 import { CalendarComponent, DateRange } from '../calendar/calendar.component';
@@ -14,7 +15,7 @@ import { ActivityToggleComponent } from './activity-toggle.component';
 import { MOCK_DASHBOARD_USER, createMockInitialDateRange } from './dashboard.mock-data';
 import { firstValueFrom } from 'rxjs';
 
-type DashboardSection = 'dashboard' | 'calendar' | 'ai-insights' | 'overview' | 'progress';
+type DashboardSection = 'dashboard' | 'calendar' | 'ai-insights' | 'overview' | 'progress' | 'activities';
 
 interface SidebarItem {
   section: DashboardSection;
@@ -28,12 +29,14 @@ const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { section: 'ai-insights', href: '#ai-insights-section', label: 'AI Insights' },
   { section: 'overview', href: '#overview-section', label: 'Overview' },
   { section: 'progress', href: '#progress-section', label: 'Progress' },
+  { section: 'activities', href: '#activities-section', label: 'Activities' },
 ];
 
 @Component({
   selector: 'app-dashboard',
   imports: [
     AiInsightsComponent,
+    ActivitiesComponent,
     CalendarComponent,
     ActivityToggleComponent,
     MotivationalQuoteComponent,
@@ -119,6 +122,10 @@ function sectionFromHash(hash: string): DashboardSection {
 
   if (hash === '#progress-section') {
     return 'progress';
+  }
+
+  if (hash === '#activities-section') {
+    return 'activities';
   }
 
   return 'dashboard';
