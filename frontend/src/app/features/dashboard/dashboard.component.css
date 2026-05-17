@@ -203,7 +203,7 @@
 }
 
 .feature-grid {
-  align-items: stretch;
+  align-items: end;
   display: grid;
   gap: clamp(1rem, 2vw, 1.6rem);
   grid-template-columns: minmax(0, 7fr) minmax(18rem, 3fr);
@@ -212,12 +212,17 @@
 .calendar-feature,
 .ai-insights-feature {
   min-width: 0;
-  scroll-margin-top: 1.25rem;
   width: 100%;
 }
 
+.calendar-feature {
+  display: grid;
+  gap: 1rem;
+}
+
 .quote-feature-row,
-.overview-feature-row {
+.overview-feature-row,
+.progress-feature-row {
   max-width: 92rem;
   width: 100%;
 }
@@ -233,7 +238,7 @@
   }
 
   .nav-list {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .hero-header {
@@ -242,6 +247,7 @@
   }
 
   .feature-grid {
+    align-items: stretch;
     grid-template-columns: 1fr;
   }
 }
