@@ -173,10 +173,6 @@ h2 {
   outline-offset: 2px;
 }
 
-.day-button.today:not(.range-edge) {
-  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
-}
-
 .preset-grid {
   display: grid;
   gap: 0.4rem;
