@@ -4,6 +4,7 @@ import { AuthService } from '../../core/auth.service';
 import { ActivitiesComponent } from '../activities/activities.component';
 import { AiInsightsComponent } from '../ai-insights/ai-insights.component';
 import { MOCK_AI_INSIGHTS_RESPONSE } from '../ai-insights/ai-insights.mock-data';
+import { AverageStatsComponent } from '../average-stats/average-stats.component';
 import { CalendarComponent, DateRange } from '../calendar/calendar.component';
 import { MotivationalQuoteComponent } from '../motivational-quote/motivational-quote.component';
 import { MOCK_DAILY_QUOTES_RESPONSE } from '../motivational-quote/motivational-quote.mock-data';
@@ -15,7 +16,14 @@ import { ActivityToggleComponent } from './activity-toggle.component';
 import { MOCK_DASHBOARD_USER, createMockInitialDateRange } from './dashboard.mock-data';
 import { firstValueFrom } from 'rxjs';
 
-type DashboardSection = 'dashboard' | 'calendar' | 'ai-insights' | 'overview' | 'progress' | 'activities';
+type DashboardSection =
+  | 'dashboard'
+  | 'calendar'
+  | 'ai-insights'
+  | 'overview'
+  | 'average-stats'
+  | 'progress'
+  | 'activities';
 
 interface SidebarItem {
   section: DashboardSection;
@@ -28,6 +36,7 @@ const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { section: 'calendar', href: '#calendar-section', label: 'Calendar' },
   { section: 'ai-insights', href: '#ai-insights-section', label: 'AI Insights' },
   { section: 'overview', href: '#overview-section', label: 'Overview' },
+  { section: 'average-stats', href: '#average-stats-section', label: 'Average Stats' },
   { section: 'progress', href: '#progress-section', label: 'Progress' },
   { section: 'activities', href: '#activities-section', label: 'Activities' },
 ];
@@ -38,6 +47,7 @@ const SIDEBAR_ITEMS: readonly SidebarItem[] = [
     AiInsightsComponent,
     ActivitiesComponent,
     CalendarComponent,
+    AverageStatsComponent,
     ActivityToggleComponent,
     MotivationalQuoteComponent,
     NgOptimizedImage,
@@ -175,6 +185,10 @@ function sectionFromHash(hash: string): DashboardSection {
 
   if (hash === '#overview-section') {
     return 'overview';
+  }
+
+  if (hash === '#average-stats-section') {
+    return 'average-stats';
   }
 
   if (hash === '#progress-section') {
