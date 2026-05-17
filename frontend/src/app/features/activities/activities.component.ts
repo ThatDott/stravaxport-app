@@ -13,13 +13,20 @@ import { ActivitiesService } from './activities.service';
 })
 export class ActivitiesComponent {
   private readonly activitiesService = inject(ActivitiesService);
+  private readonly initialVisibleDateGroups = 5;
 
   readonly range = input.required<DateRange>();
   readonly activity = input.required<ProgressActivityType>();
   readonly groups = signal<readonly ActivityDateGroup[]>([]);
+  readonly isExpanded = signal(false);
   readonly isLoading = signal(false);
   readonly activityLabel = computed(() => formatActivityLabel(this.activity()));
   readonly subtitle = computed(() => `Grouped by date | ${formatDateRange(this.range())}`);
+  readonly visibleGroups = computed(() =>
+    this.isExpanded() ? this.groups() : this.groups().slice(0, this.initialVisibleDateGroups),
+  );
+  readonly hasMoreGroups = computed(() => this.groups().length > this.initialVisibleDateGroups);
+  readonly toggleLabel = computed(() => (this.isExpanded() ? 'See less' : 'See more'));
 
   private requestId = 0;
 
@@ -29,6 +36,7 @@ export class ActivitiesComponent {
       const activity = this.activity();
 
       queueMicrotask(() => {
+        this.isExpanded.set(false);
         void this.loadActivities(range, activity);
       });
     });
@@ -57,6 +65,10 @@ export class ActivitiesComponent {
 
   dateLabel(activity: ActivityItem): string {
     return activity.date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  toggleExpanded(): void {
+    this.isExpanded.update((isExpanded) => !isExpanded);
   }
 
   private async loadActivities(range: DateRange, activity: ProgressActivityType): Promise<void> {

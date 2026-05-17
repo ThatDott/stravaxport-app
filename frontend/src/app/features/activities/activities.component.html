@@ -13,7 +13,7 @@
 
   <div class="activity-groups" [class.loading-groups]="isLoading()">
     @if (groups().length) {
-      @for (group of groups(); track group.key) {
+      @for (group of visibleGroups(); track group.key) {
         <section class="date-group" [attr.aria-labelledby]="'activities-' + group.key">
           <h3 [id]="'activities-' + group.key">{{ group.label }}</h3>
 
@@ -58,6 +58,17 @@
             }
           </div>
         </section>
+      }
+
+      @if (hasMoreGroups()) {
+        <button
+          type="button"
+          class="see-more-button"
+          [attr.aria-expanded]="isExpanded()"
+          (click)="toggleExpanded()"
+        >
+          {{ toggleLabel() }}
+        </button>
       }
     } @else {
       <p class="empty-state">No activities match this range and activity filter.</p>
