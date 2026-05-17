@@ -90,8 +90,9 @@ async def sync_activities_to_db(
             await crud.create_activity(db, activity)
             saved_count += 1
     
-    # Invalidate the cached AI insight for this user so that the next login
-    # triggers a fresh Gemini call reflecting the newly synced activities.
-    await crud.invalidate_insight(db, strava_id)
+    # Only invalidate the cached AI insight if new activities were actually saved.
+    # If nothing new was found, the cache remains valid and Gemini is not called.
+    if saved_count > 0:
+        await crud.invalidate_insight(db, strava_id)
 
     return {"message": f"Synced {saved_count} new activities", "count": saved_count}
