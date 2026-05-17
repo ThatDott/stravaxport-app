@@ -7,10 +7,11 @@ import { CalendarComponent, DateRange } from '../calendar/calendar.component';
 import { MotivationalQuoteComponent } from '../motivational-quote/motivational-quote.component';
 import { MOCK_DAILY_QUOTES_RESPONSE } from '../motivational-quote/motivational-quote.mock-data';
 import { MotivationalQuoteService } from '../motivational-quote/motivational-quote.service';
+import { OverviewComponent } from '../overview/overview.component';
 import { MOCK_DASHBOARD_USER, createMockInitialDateRange } from './dashboard.mock-data';
 import { firstValueFrom } from 'rxjs';
 
-type DashboardSection = 'dashboard' | 'calendar' | 'ai-insights';
+type DashboardSection = 'dashboard' | 'calendar' | 'ai-insights' | 'overview';
 
 interface SidebarItem {
   section: DashboardSection;
@@ -22,11 +23,12 @@ const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { section: 'dashboard', href: '#dashboard-home', label: 'Dashboard' },
   { section: 'calendar', href: '#calendar-section', label: 'Calendar' },
   { section: 'ai-insights', href: '#ai-insights-section', label: 'AI Insights' },
+  { section: 'overview', href: '#overview-section', label: 'Overview' },
 ];
 
 @Component({
   selector: 'app-dashboard',
-  imports: [AiInsightsComponent, CalendarComponent, MotivationalQuoteComponent, NgOptimizedImage],
+  imports: [AiInsightsComponent, CalendarComponent, MotivationalQuoteComponent, NgOptimizedImage, OverviewComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
@@ -92,6 +94,10 @@ function sectionFromHash(hash: string): DashboardSection {
 
   if (hash === '#ai-insights-section') {
     return 'ai-insights';
+  }
+
+  if (hash === '#overview-section') {
+    return 'overview';
   }
 
   return 'dashboard';
