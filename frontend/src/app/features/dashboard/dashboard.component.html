@@ -77,6 +77,15 @@
                 <path d="M16 7h4v4" />
               </svg>
             }
+            @case ('average-stats') {
+              <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                <path d="M4 19V5" />
+                <path d="M4 19h16" />
+                <path d="M8 17v-5" />
+                <path d="M12 17V7" />
+                <path d="M16 17v-8" />
+              </svg>
+            }
             @case ('activities') {
               <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
                 <path d="M4 12h3l2-6 4 12 2-6h5" />
@@ -157,6 +166,16 @@
       (focusin)="setActiveSection('overview')"
     >
       <app-overview [range]="selectedRange()" [activity]="selectedActivity()" />
+    </section>
+
+    <section
+      id="average-stats-section"
+      class="progress-feature-row"
+      aria-label="Average stats"
+      (mouseenter)="setActiveSection('average-stats')"
+      (focusin)="setActiveSection('average-stats')"
+    >
+      <app-average-stats [range]="selectedRange()" [activity]="selectedActivity()" />
     </section>
 
     <section

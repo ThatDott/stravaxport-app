@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+.average-stats-grid {
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.6rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 72rem) {
+  .average-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

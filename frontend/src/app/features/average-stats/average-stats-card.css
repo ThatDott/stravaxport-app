@@ -1,0 +1,99 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.stat-card {
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  display: grid;
+  gap: 1.5rem;
+  min-height: 11.25rem;
+  padding: clamp(1.1rem, 2vw, 1.65rem);
+}
+
+.stat-header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.stat-icon {
+  color: var(--accent);
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.stat-icon svg {
+  fill: none;
+  height: 1.25rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  width: 1.25rem;
+}
+
+h3,
+p {
+  margin: 0;
+}
+
+h3 {
+  font-size: 1.2rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.activity-pill {
+  align-items: center;
+  background: color-mix(in srgb, var(--accent) 16%, var(--secondary));
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  display: inline-flex;
+  height: 1.65rem;
+  justify-content: center;
+  width: 1.65rem;
+}
+
+.activity-pill svg {
+  fill: none;
+  height: 0.95rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  width: 0.95rem;
+}
+
+.stat-value {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.stat-value strong {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4vw, 3.15rem);
+  font-weight: 650;
+  line-height: 0.9;
+}
+
+.stat-value span,
+.stat-note {
+  color: var(--muted-foreground);
+}
+
+.stat-value span {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+
+.stat-note {
+  line-height: 1.5;
+}

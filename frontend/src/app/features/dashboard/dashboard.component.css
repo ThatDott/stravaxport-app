@@ -83,7 +83,7 @@
 }
 
 .nav-link {
-  border-radius: 0.95rem;
+  border-radius: .95rem;
   color: var(--muted-foreground);
   font-size: 0.95rem;
   font-weight: 650;
@@ -91,7 +91,7 @@
   min-height: 3.35rem;
   padding: 0.7rem 1rem;
   text-decoration: none;
-  transition: background-color 160ms ease, color 160ms ease;
+  transition: background 160ms ease, color 160ms ease;
 }
 
 .nav-link svg {
@@ -129,7 +129,7 @@
   align-items: baseline;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.9rem;
+  gap: .9rem;
 }
 
 .product-lockup span {
@@ -234,7 +234,7 @@
   }
 
   .nav-list {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
   .hero-header {
