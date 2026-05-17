@@ -1,5 +1,5 @@
 # frontend/Dockerfile
-FROM node:18-alpine
+FROM node:20.19-alpine
 
 # Set working directory
 WORKDIR /app
@@ -18,4 +18,4 @@ COPY . .
 EXPOSE 4200
 
 # Run Angular dev server with host binding for Docker
-CMD ["ng", "serve", "--host", "0.0.0.0", "--poll", "2000"]
+CMD ["ng", "serve"]
