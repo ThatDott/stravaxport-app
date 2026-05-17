@@ -135,6 +135,7 @@
 
 .product-lockup span {
   font-size: clamp(2rem, 3vw, 3rem);
+  font-weight: 650;
 }
 
 .product-lockup small {
@@ -215,6 +216,11 @@
 .ai-insights-feature {
   min-width: 0;
   scroll-margin-top: 1.25rem;
+  width: 100%;
+}
+
+.quote-feature-row {
+  max-width: 92rem;
   width: 100%;
 }
 
