@@ -1,0 +1,32 @@
+<section class="quote-note" aria-labelledby="quote-note-title">
+  <header class="quote-header">
+    <span class="date-badge" aria-label="Quote date">
+      <span>{{ dateBadge().month }}</span>
+      <strong>{{ dateBadge().day }}</strong>
+    </span>
+
+    <div class="quote-title-row">
+      <h2 id="quote-note-title">Quote of the day</h2>
+    </div>
+  </header>
+
+  @if (quote(); as dailyQuote) {
+    <blockquote class="quote-body">
+      <div class="quote-copy">
+        <p>{{ dailyQuote.text }}</p>
+        @if (dailyQuote.author) {
+          <cite>{{ dailyQuote.author }}</cite>
+        }
+      </div>
+
+      <span class="quote-mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64" focusable="false">
+          <path d="M27 24H15.8c.6-6.2 3.7-10.8 9.2-13.7L21.7 5C12.8 8.9 8 16.5 8 27.7V48h19V24Z" />
+          <path d="M56 24H44.8c.6-6.2 3.7-10.8 9.2-13.7L50.7 5C41.8 8.9 37 16.5 37 27.7V48h19V24Z" />
+        </svg>
+      </span>
+    </blockquote>
+  } @else {
+    <p class="empty-state">Your daily quote will appear here once it is ready.</p>
+  }
+</section>

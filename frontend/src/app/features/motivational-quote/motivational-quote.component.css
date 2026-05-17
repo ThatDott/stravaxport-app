@@ -1,0 +1,143 @@
+:host {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.quote-note {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 32%, white),
+    color-mix(in srgb, var(--accent) 29%, white)
+  );
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, white);
+  border-radius: var(--radius-lg);
+  color: var(--accent-foreground);
+  overflow: hidden;
+  padding: 1rem;
+  position: relative;
+  width: 100%;
+}
+
+blockquote,
+cite,
+h2,
+p {
+  margin: 0;
+}
+
+.quote-header {
+  align-items: center;
+  display: flex;
+  gap: 0.8rem;
+}
+
+.date-badge {
+  align-items: center;
+  background: color-mix(in srgb, white 85%, var(--accent));
+  border-radius: 0.8rem;
+  color: color-mix(in srgb, var(--accent-foreground) 78%, transparent);
+  display: grid;
+  flex: 0 0 auto;
+  gap: 0.08rem;
+  height: 2.6rem;
+  justify-items: center;
+  line-height: 1;
+  padding: 0.35rem 0.45rem;
+  width: 2.6rem;
+}
+
+.date-badge span {
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: var(--color-cyan-800);
+}
+
+.date-badge strong {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--color-red-700);
+}
+
+.quote-title-row {
+  align-items: center;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.quote-icon {
+  color: color-mix(in srgb, var(--accent) 74%, var(--accent-foreground));
+  display: inline-flex;
+}
+
+.quote-icon svg {
+  fill: currentColor;
+  height: 0.5rem;
+  width: 0.5rem;
+}
+
+h2 {
+  color: var(--accent-foreground);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.quote-body {
+  align-items: end;
+  display: flex;
+  gap: 0.55rem;
+  justify-content: space-between;
+}
+
+.quote-copy {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 62rem;
+  min-width: 0;
+}
+
+.quote-copy p {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 650;
+  line-height: 1.32;
+}
+
+cite {
+  color: color-mix(in srgb, var(--accent-foreground) 68%, transparent);
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.quote-mark {
+  color: color-mix(in srgb, var(--accent) 32%, transparent);
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.quote-mark svg {
+  fill: currentColor;
+  height: 4rem;
+  transform: scaleX(-1);
+  width: 4rem;
+}
+
+.empty-state {
+  color: color-mix(in srgb, var(--accent-foreground) 78%, transparent);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 42rem) {
+  .quote-body {
+    align-items: start;
+  }
+
+  .quote-mark {
+    display: none;
+  }
+}
