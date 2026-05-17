@@ -8,10 +8,13 @@ import { MotivationalQuoteComponent } from '../motivational-quote/motivational-q
 import { MOCK_DAILY_QUOTES_RESPONSE } from '../motivational-quote/motivational-quote.mock-data';
 import { MotivationalQuoteService } from '../motivational-quote/motivational-quote.service';
 import { OverviewComponent } from '../overview/overview.component';
+import { ProgressGraphComponent } from '../progress-graph/progress-graph.component';
+import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
+import { ActivityToggleComponent } from './activity-toggle.component';
 import { MOCK_DASHBOARD_USER, createMockInitialDateRange } from './dashboard.mock-data';
 import { firstValueFrom } from 'rxjs';
 
-type DashboardSection = 'dashboard' | 'calendar' | 'ai-insights' | 'overview';
+type DashboardSection = 'dashboard' | 'calendar' | 'ai-insights' | 'overview' | 'progress';
 
 interface SidebarItem {
   section: DashboardSection;
@@ -24,11 +27,20 @@ const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { section: 'calendar', href: '#calendar-section', label: 'Calendar' },
   { section: 'ai-insights', href: '#ai-insights-section', label: 'AI Insights' },
   { section: 'overview', href: '#overview-section', label: 'Overview' },
+  { section: 'progress', href: '#progress-section', label: 'Progress' },
 ];
 
 @Component({
   selector: 'app-dashboard',
-  imports: [AiInsightsComponent, CalendarComponent, MotivationalQuoteComponent, NgOptimizedImage, OverviewComponent],
+  imports: [
+    AiInsightsComponent,
+    CalendarComponent,
+    ActivityToggleComponent,
+    MotivationalQuoteComponent,
+    NgOptimizedImage,
+    OverviewComponent,
+    ProgressGraphComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
@@ -42,6 +54,7 @@ export class DashboardComponent implements OnInit {
   readonly userProfile = signal(MOCK_DASHBOARD_USER);
   readonly activeSection = signal<DashboardSection>('dashboard');
   readonly selectedRange = signal<DateRange>(createMockInitialDateRange());
+  readonly selectedActivity = signal<ProgressActivityType>('all');
   readonly aiInsights = signal(MOCK_AI_INSIGHTS_RESPONSE);
   readonly dailyQuotes = signal(MOCK_DAILY_QUOTES_RESPONSE);
 
@@ -61,6 +74,10 @@ export class DashboardComponent implements OnInit {
 
   setActiveSection(section: DashboardSection): void {
     this.activeSection.set(section);
+  }
+
+  selectActivity(activity: ProgressActivityType): void {
+    this.selectedActivity.set(activity);
   }
 
   logout(): void {
@@ -98,6 +115,10 @@ function sectionFromHash(hash: string): DashboardSection {
 
   if (hash === '#overview-section') {
     return 'overview';
+  }
+
+  if (hash === '#progress-section') {
+    return 'progress';
   }
 
   return 'dashboard';

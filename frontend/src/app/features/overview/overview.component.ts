@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { DateRange } from '../calendar/calendar.component';
+import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
 import { MOCK_OVERVIEW_DATA } from './overview.mock-data';
 
 @Component({
@@ -10,7 +11,8 @@ import { MOCK_OVERVIEW_DATA } from './overview.mock-data';
 })
 export class OverviewComponent {
   readonly range = input.required<DateRange>();
-  readonly overview = MOCK_OVERVIEW_DATA;
+  readonly activity = input.required<ProgressActivityType>();
+  readonly overview = computed(() => MOCK_OVERVIEW_DATA[this.activity()]);
   readonly rangeLabel = computed(() => formatDateRange(this.range()));
 }
 
