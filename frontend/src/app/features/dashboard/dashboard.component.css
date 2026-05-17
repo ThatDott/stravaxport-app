@@ -112,7 +112,6 @@
   flex-direction: column;
   gap: 2rem;
   padding: clamp(1.25rem, 3vw, 2rem) clamp(1rem, 3.5vw, 2.8rem) 3rem;
-  scroll-behavior: smooth;
 }
 
 .hero-header {
@@ -220,10 +219,7 @@
   gap: 1rem;
 }
 
-.quote-feature-row,
-.overview-feature-row,
-.progress-feature-row {
-  max-width: 92rem;
+.quote-feature-row,.overview-feature-row,.progress-feature-row,.activities-feature-row {
   width: 100%;
 }
 
@@ -238,7 +234,7 @@
   }
 
   .nav-list {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .hero-header {

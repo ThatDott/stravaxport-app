@@ -1,0 +1,66 @@
+<section class="activities-card" aria-labelledby="activities-title">
+  <header class="activities-header">
+    <span class="title-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" focusable="false">
+        <path d="M4 12h3l2-6 4 12 2-6h5" />
+      </svg>
+    </span>
+    <div>
+      <h2 id="activities-title">{{ activityLabel() }}</h2>
+      <p>{{ subtitle() }}</p>
+    </div>
+  </header>
+
+  <div class="activity-groups" [class.loading-groups]="isLoading()">
+    @if (groups().length) {
+      @for (group of groups(); track group.key) {
+        <section class="date-group" [attr.aria-labelledby]="'activities-' + group.key">
+          <h3 [id]="'activities-' + group.key">{{ group.label }}</h3>
+
+          <div class="activity-list">
+            @for (activity of group.activities; track activity.id) {
+              <article class="activity-row" [attr.aria-label]="activity.name + ', ' + primaryMetric(activity)">
+                <span class="activity-icon" [class.bike-icon]="activity.activityType === 'ride'" aria-hidden="true">
+                  @if (activity.activityType === 'ride') {
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <circle cx="6.5" cy="16.5" r="3.5" />
+                      <circle cx="17.5" cy="16.5" r="3.5" />
+                      <path d="M9.5 16.5 12 9h3l-3 7.5h5.5" />
+                      <path d="M12 9 8.5 16.5" />
+                      <path d="M14 6h3" />
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="M8.4 6.4c.8-1.8 2.8-2.8 4.2-2.2 1.4.6 1.7 2.4.8 4.2-.8 1.8-2.6 3.1-4 2.5-1.4-.6-1.9-2.7-1-4.5Z" />
+                      <path d="M14.3 14.7c1.3-1.4 3.5-1.8 4.6-.8s.8 2.8-.5 4.3c-1.3 1.4-3.4 2.1-4.5 1.1-1.2-1-.9-3.1.4-4.6Z" />
+                      <path d="M6.3 15.2c.8-.9 2.2-1.1 3-.4.8.7.7 2-.1 2.9-.8.9-2.2 1.2-3 .5-.8-.7-.7-2.1.1-3Z" />
+                      <path d="M15.9 5.2c.7-.8 2-.9 2.7-.3.7.6.7 1.8 0 2.6-.7.8-1.9 1-2.7.4-.7-.6-.7-1.9 0-2.7Z" />
+                    </svg>
+                  }
+                </span>
+
+                <div class="activity-copy">
+                  <p class="activity-title">
+                    <strong>{{ activity.name }}</strong>
+                    <span class="activity-badge" [class.bike-badge]="activity.activityType === 'ride'">
+                      {{ activityBadge(activity) }}
+                    </span>
+                    <span>{{ dateLabel(activity) }}</span>
+                  </p>
+                  <p class="activity-stats">
+                    <span>{{ primaryMetric(activity) }}</span>
+                    <span>{{ timeMetric(activity) }}</span>
+                    <span>{{ performanceMetric(activity) }}</span>
+                    <span>{{ elevationMetric(activity) }}</span>
+                  </p>
+                </div>
+              </article>
+            }
+          </div>
+        </section>
+      }
+    } @else {
+      <p class="empty-state">No activities match this range and activity filter.</p>
+    }
+  </div>
+</section>
