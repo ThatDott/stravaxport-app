@@ -154,7 +154,11 @@
       (mouseenter)="setActiveSection('progress')"
       (focusin)="setActiveSection('progress')"
     >
-      <app-progress-graph [range]="selectedRange()" [selectedActivity]="selectedActivity()" />
+      <app-progress-graph
+        [range]="selectedRange()"
+        [selectedActivity]="selectedActivity()"
+        (activityChange)="selectActivity($event)"
+      />
     </section>
 
     <section

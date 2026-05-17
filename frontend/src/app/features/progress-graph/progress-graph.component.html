@@ -10,7 +10,7 @@
             </svg>
           </span>
           <div>
-            <h2 id="progress-title">Progress – Improvement Trend</h2>
+            <h2 id="progress-title">Progress - Improvement Trend</h2>
             <p>{{ subtitle() }}</p>
           </div>
         </div>
@@ -29,27 +29,29 @@
             <path class="grid-line" [attr.d]="'M 10 ' + line + ' H 250'" />
           }
 
-          @if (chart().areaPath) {
-            <path class="area-path" [attr.d]="chart().areaPath" />
-            <path class="line-path" [attr.d]="chart().linePath" />
-          }
+          @for (series of chart().series; track series.key) {
+            <g class="series-layer" [class.ride-series]="series.key === 'ride'">
+              <path class="area-path" [attr.d]="series.areaPath" />
+              <path class="line-path" [attr.d]="series.linePath" />
 
-          @for (point of chart().points; track point.label) {
-            <g class="point-group">
-              <circle class="point-glow" [attr.cx]="point.x" [attr.cy]="point.y" r="2.8" />
-              <circle class="point-dot" [attr.cx]="point.x" [attr.cy]="point.y" r="1.2" />
-              <g
-                class="point-tooltip"
-                [attr.transform]="'translate(' + (point.x + point.tooltipX) + ' ' + (point.y + point.tooltipY) + ')'"
-              >
-                <rect x="-30" y="-20" width="60" height="17" rx="2.5" />
-                <text x="0" y="-13">{{ point.rangeLabel }}</text>
-                <text x="0" y="-6">{{ point.distanceLabel }}</text>
-              </g>
+              @for (point of series.points; track point.label) {
+                <g class="point-group">
+                  <circle class="point-glow" [attr.cx]="point.x" [attr.cy]="point.y" r="2.8" />
+                  <circle class="point-dot" [attr.cx]="point.x" [attr.cy]="point.y" r="1.2" />
+                  <g
+                    class="point-tooltip"
+                    [attr.transform]="'translate(' + (point.x + point.tooltipX) + ' ' + (point.y + point.tooltipY) + ')'"
+                  >
+                    <rect x="-30" y="-20" width="60" height="17" rx="2.5" />
+                    <text x="0" y="-13">{{ point.rangeLabel }}</text>
+                    <text x="0" y="-6">{{ point.distanceLabel }}</text>
+                  </g>
+                </g>
+              }
             </g>
           }
 
-          @for (point of chart().points; track point.label) {
+          @for (point of chart().labels; track point.label) {
             <text class="x-label" [attr.x]="point.x" y="94">{{ point.label }}</text>
           }
         </svg>
@@ -70,6 +72,36 @@
         </span>
         <h2 id="progress-summary-title">Summary</h2>
       </header>
+
+      <div class="summary-toggle-group" aria-label="Filter progress by activity">
+        <button
+          type="button"
+          class="summary-toggle"
+          [class.active-summary-toggle]="selectedActivity() === 'all'"
+          [attr.aria-pressed]="selectedActivity() === 'all'"
+          (click)="toggleActivity('all')"
+        >
+          All
+        </button>
+        <button
+          type="button"
+          class="summary-toggle"
+          [class.active-summary-toggle]="selectedActivity() === 'ride'"
+          [attr.aria-pressed]="selectedActivity() === 'ride'"
+          (click)="toggleActivity('ride')"
+        >
+          Bike
+        </button>
+        <button
+          type="button"
+          class="summary-toggle"
+          [class.active-summary-toggle]="selectedActivity() === 'walk'"
+          [attr.aria-pressed]="selectedActivity() === 'walk'"
+          (click)="toggleActivity('walk')"
+        >
+          Walk
+        </button>
+      </div>
 
       <dl class="summary-list">
         <div>
@@ -93,6 +125,20 @@
           <dd>{{ summary().rangeLabel }}</dd>
         </div>
       </dl>
+
+      <div class="summary-video-frame" aria-hidden="true">
+        <video
+          class="summary-video"
+          src="/walking.mp4"
+          autoplay
+          loop
+          muted
+          playsinline
+          preload="auto"
+          (canplay)="playSummaryVideo($event)"
+          (loadedmetadata)="playSummaryVideo($event)"
+        ></video>
+      </div>
     </aside>
   </div>
 </section>

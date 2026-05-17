@@ -58,13 +58,22 @@ function buildProgressData(
 
   for (const activity of filtered) {
     const activityDate = parseActivityDate(activity);
+    const normalizedType = normalizeActivityType(activity);
     if (!activityDate) {
       continue;
     }
 
     const bucket = buckets.find((item) => isWithinRange(activityDate, item.start, item.end));
     if (bucket) {
-      bucket.distanceKm += (activity.distance ?? 0) / 1000;
+      const distanceKm = (activity.distance ?? 0) / 1000;
+
+      if (normalizedType === 'walk') {
+        bucket.walkDistanceKm += distanceKm;
+      } else if (normalizedType === 'ride') {
+        bucket.rideDistanceKm += distanceKm;
+      }
+
+      bucket.distanceKm += distanceKm;
     }
   }
 
@@ -73,6 +82,8 @@ function buildProgressData(
       label: bucket.label,
       rangeLabel: formatRange(bucket.start, bucket.end),
       distanceKm: roundOne(bucket.distanceKm),
+      walkDistanceKm: roundOne(bucket.walkDistanceKm),
+      rideDistanceKm: roundOne(bucket.rideDistanceKm),
     })),
     summary: {
       totalActivities: filtered.length,
@@ -86,16 +97,22 @@ function buildProgressData(
 
 function createMockProgress(range: DateRange, activityType: ProgressActivityType): ProgressGraphData {
   const buckets = buildWeekBuckets(range);
+  const walkDistances = [4.8, 7.2, 6.4, 10.1, 8.8, 12.0, 13.5, 16.4];
+  const rideDistances = [8.4, 11.6, 9.8, 15.2, 13.5, 18.3, 16.7, 21.1];
   const distancesByActivity: Record<ProgressActivityType, readonly number[]> = {
-    all: [4.8, 7.2, 6.4, 10.1, 8.8, 12.0, 13.5, 16.4],
+    all: walkDistances.map((distance, index) => distance + (rideDistances[index] ?? 0)),
     walk: [1.6, 2.2, 1.9, 3.1, 2.8, 3.4, 2.7, 3.9],
-    ride: [8.4, 11.6, 9.8, 15.2, 13.5, 18.3, 16.7, 21.1],
+    ride: rideDistances,
   };
   const distances = distancesByActivity[activityType];
   const points: ProgressPoint[] = buckets.map((bucket, index) => ({
     label: bucket.label,
     rangeLabel: formatRange(bucket.start, bucket.end),
-    distanceKm: distances[index % distances.length] ?? 0,
+    distanceKm: roundOne(distances[index % distances.length] ?? 0),
+    walkDistanceKm:
+      activityType === 'ride' ? 0 : roundOne(walkDistances[index % walkDistances.length] ?? 0),
+    rideDistanceKm:
+      activityType === 'walk' ? 0 : roundOne(rideDistances[index % rideDistances.length] ?? 0),
   }));
 
   return {
@@ -110,16 +127,25 @@ function createMockProgress(range: DateRange, activityType: ProgressActivityType
   };
 }
 
-function buildWeekBuckets(range: DateRange): Array<{ label: string; start: Date; end: Date; distanceKm: number }> {
+function buildWeekBuckets(
+  range: DateRange,
+): Array<{ label: string; start: Date; end: Date; distanceKm: number; walkDistanceKm: number; rideDistanceKm: number }> {
   const start = startOfDay(range.start);
   const rangeEnd = startOfDay(range.end);
-  const buckets: Array<{ label: string; start: Date; end: Date; distanceKm: number }> = [];
+  const buckets: Array<{
+    label: string;
+    start: Date;
+    end: Date;
+    distanceKm: number;
+    walkDistanceKm: number;
+    rideDistanceKm: number;
+  }> = [];
   let cursor = start;
   let index = 1;
 
   while (cursor.getTime() <= rangeEnd.getTime()) {
     const end = minDate(addDays(cursor, 6), rangeEnd);
-    buckets.push({ label: `W${index}`, start: cursor, end, distanceKm: 0 });
+    buckets.push({ label: `W${index}`, start: cursor, end, distanceKm: 0, walkDistanceKm: 0, rideDistanceKm: 0 });
     cursor = addDays(end, 1);
     index += 1;
   }
@@ -132,8 +158,21 @@ function matchesActivityType(activity: StravaActivity, activityType: ProgressAct
     return true;
   }
 
+  return normalizeActivityType(activity) === activityType;
+}
+
+function normalizeActivityType(activity: StravaActivity): Exclude<ProgressActivityType, 'all'> | null {
   const normalized = (activity.sport_type ?? activity.type ?? '').toLowerCase();
-  return normalized.includes(activityType);
+
+  if (normalized.includes('walk')) {
+    return 'walk';
+  }
+
+  if (normalized.includes('ride') || normalized.includes('bike') || normalized.includes('cycling')) {
+    return 'ride';
+  }
+
+  return null;
 }
 
 function parseActivityDate(activity: StravaActivity): Date | null {
