@@ -1,9 +1,11 @@
-from fastapi import APIRouter
-from app.services.insight_service import InsightService
-from app.schemas.insight import InsightResponse
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.database import get_db
+from app.db import crud
+from app.schemas.insight import AIInsightCreate, AIInsightResponse
 
 router = APIRouter()
 
-@router.get("/", response_model=InsightResponse)
-async def get_insights():
-    return await InsightService.get_ai_insights()
+@router.post("/", response_model=AIInsightResponse)
+async def create_insight(insight: AIInsightCreate, db: AsyncSession = Depends(get_db)):
+    return await crud.create_ai_insight(db, insight)
