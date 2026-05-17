@@ -116,7 +116,7 @@ function filterActivitiesByRange(activities: readonly ActivityItem[], range: Dat
 }
 
 function groupActivities(activities: readonly ActivityItem[]): readonly ActivityDateGroup[] {
-  const sorted = [...activities].sort((first, second) => second.date.getTime() - first.date.getTime());
+  const sorted = [...activities].sort((first, second) => first.date.getTime() - second.date.getTime());
   const groups = new Map<string, ActivityItem[]>();
 
   for (const activity of sorted) {
