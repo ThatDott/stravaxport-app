@@ -1,4 +1,14 @@
-<div class="dashboard-shell">
+<div
+  class="dashboard-shell"
+  [class.bike-theme]="selectedActivity() === 'ride'"
+  [class.run-theme]="selectedActivity() === 'run'"
+  [style.--accent]="themeAccent()"
+  [style.--accent-foreground]="themeAccentForeground()"
+  [style.--primary]="themePrimary()"
+  [style.--background]="themeBackground()"
+  [style.--card]="themeCard()"
+  [style.--ring]="themeRing()"
+>
   <aside class="sidebar" aria-label="Primary navigation">
     <a
       class="brand"

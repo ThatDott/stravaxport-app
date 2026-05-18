@@ -126,13 +126,13 @@ h3 {
 }
 
 .activity-icon.bike-icon {
-  background: color-mix(in srgb, #f97316 18%, var(--secondary));
-  color: #f97316;
+  background: color-mix(in srgb, #9b6a99 18%, var(--secondary));
+  color: #9b6a99;
 }
 
 .activity-icon.run-icon {
-  background: color-mix(in srgb, #22c55e 18%, var(--secondary));
-  color: #22c55e;
+  background: color-mix(in srgb, #1f6f5f 18%, var(--secondary));
+  color: #1f6f5f;
 }
 
 .activity-copy {
@@ -162,13 +162,13 @@ h3 {
 }
 
 .activity-badge.bike-badge {
-  background: color-mix(in srgb, #f97316 18%, var(--secondary));
-  color: #f97316;
+  background: color-mix(in srgb, #9b6a99 18%, var(--secondary));
+  color: #9b6a99;
 }
 
 .activity-badge.run-badge {
-  background: color-mix(in srgb, #22c55e 18%, var(--secondary));
-  color: #22c55e;
+  background: color-mix(in srgb, #1f6f5f 18%, var(--secondary));
+  color: #1f6f5f;
 }
 
 .activity-stats {

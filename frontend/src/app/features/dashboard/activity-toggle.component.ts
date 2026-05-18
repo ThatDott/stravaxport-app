@@ -81,11 +81,11 @@ export class ActivityToggleComponent {
 
   activeBackground(activity: ProgressActivityType): string {
     if (activity === 'ride') {
-      return '#f97316';
+      return '#9B6A99';
     }
 
     if (activity === 'run') {
-      return '#22c55e';
+      return '#1F6F5F';
     }
 
     return 'var(--accent)';
@@ -93,11 +93,11 @@ export class ActivityToggleComponent {
 
   activeColor(activity: ProgressActivityType): string {
     if (activity === 'ride') {
-      return '#0f172a';
+      return '#1f1028';
     }
 
     if (activity === 'run') {
-      return '#052e16';
+      return '#ecfdf5';
     }
 
     return 'var(--accent-foreground)';
