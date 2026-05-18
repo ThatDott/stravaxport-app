@@ -93,11 +93,11 @@ h2 {
 }
 
 .ride-series {
-  color: #f97316;
+  color: #9b6a99;
 }
 
 .run-series {
-  color: #22c55e;
+  color: #1f6f5f;
 }
 
 .grid-line {
@@ -234,13 +234,13 @@ dd {
 }
 
 .summary-toggle:nth-child(3).active-summary-toggle {
-  background: #f97316;
-  color: #0f172a;
+  background: #9b6a99;
+  color: #1f1028;
 }
 
 .summary-toggle:nth-child(4).active-summary-toggle {
-  background: #22c55e;
-  color: #052e16;
+  background: #1f6f5f;
+  color: #ecfdf5;
 }
 
 .summary-video-frame {

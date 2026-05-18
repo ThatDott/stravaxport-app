@@ -83,6 +83,30 @@ export class DashboardComponent implements OnInit {
     this.selectedActivity.set(activity);
   }
 
+  themeAccent(): string | null {
+    return this.activityThemeValue('accent');
+  }
+
+  themeAccentForeground(): string | null {
+    return this.activityThemeValue('accentForeground');
+  }
+
+  themePrimary(): string | null {
+    return this.activityThemeValue('primary');
+  }
+
+  themeBackground(): string | null {
+    return this.activityThemeValue('background');
+  }
+
+  themeCard(): string | null {
+    return this.activityThemeValue('card');
+  }
+
+  themeRing(): string | null {
+    return this.activityThemeValue('ring');
+  }
+
   logout(): void {
     this.authService.logout();
   }
@@ -91,7 +115,40 @@ export class DashboardComponent implements OnInit {
     const response = await firstValueFrom(this.motivationalQuoteService.getDailyQuotes());
     this.dailyQuotes.set(response);
   }
+
+  private activityThemeValue(key: keyof ActivityTheme): string | null {
+    const theme = ACTIVITY_THEMES[this.selectedActivity()];
+    return theme?.[key] ?? null;
+  }
 }
+
+interface ActivityTheme {
+  accent: string;
+  accentForeground: string;
+  primary: string;
+  background: string;
+  card: string;
+  ring: string;
+}
+
+const ACTIVITY_THEMES: Partial<Record<ProgressActivityType, ActivityTheme>> = {
+  ride: {
+    accent: '#9B6A99',
+    accentForeground: '#1f1028',
+    primary: 'color-mix(in srgb, #9B6A99 82%, #e9d5ff)',
+    background: 'color-mix(in srgb, #1b1424 74%, var(--color-black))',
+    card: 'color-mix(in srgb, #281b34 78%, var(--color-black))',
+    ring: '#c59ac3',
+  },
+  run: {
+    accent: '#1F6F5F',
+    accentForeground: '#ecfdf5',
+    primary: 'color-mix(in srgb, #1F6F5F 82%, #5eead4)',
+    background: 'color-mix(in srgb, #071917 74%, var(--color-black))',
+    card: 'color-mix(in srgb, #0d2420 78%, var(--color-black))',
+    ring: '#3d9b87',
+  },
+};
 
 function normalizeRange(range: DateRange): DateRange {
   const start = startOfDay(range.start);
