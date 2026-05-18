@@ -6,6 +6,7 @@ import { AiInsightsComponent } from '../ai-insights/ai-insights.component';
 import { MOCK_AI_INSIGHTS_RESPONSE } from '../ai-insights/ai-insights.mock-data';
 import { AverageStatsComponent } from '../average-stats/average-stats.component';
 import { CalendarComponent, DateRange } from '../calendar/calendar.component';
+import { IamgeExportComponent } from '../iamge-export/iamge-export.component';
 import { MotivationalQuoteComponent } from '../motivational-quote/motivational-quote.component';
 import { MOCK_DAILY_QUOTES_RESPONSE } from '../motivational-quote/motivational-quote.mock-data';
 import { MotivationalQuoteService } from '../motivational-quote/motivational-quote.service';
@@ -23,7 +24,8 @@ type DashboardSection =
   | 'overview'
   | 'average-stats'
   | 'progress'
-  | 'activities';
+  | 'activities'
+  | 'export';
 
 interface SidebarItem {
   section: DashboardSection;
@@ -39,6 +41,7 @@ const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { section: 'average-stats', href: '#average-stats-section', label: 'Average Stats' },
   { section: 'progress', href: '#progress-section', label: 'Progress' },
   { section: 'activities', href: '#activities-section', label: 'Activities' },
+  { section: 'export', href: '#export-section', label: 'Export' },
 ];
 
 @Component({
@@ -48,6 +51,7 @@ const SIDEBAR_ITEMS: readonly SidebarItem[] = [
     ActivitiesComponent,
     CalendarComponent,
     AverageStatsComponent,
+    IamgeExportComponent,
     ActivityToggleComponent,
     MotivationalQuoteComponent,
     NgOptimizedImage,
@@ -197,6 +201,10 @@ function sectionFromHash(hash: string): DashboardSection {
 
   if (hash === '#activities-section') {
     return 'activities';
+  }
+
+  if (hash === '#export-section') {
+    return 'export';
   }
 
   return 'dashboard';

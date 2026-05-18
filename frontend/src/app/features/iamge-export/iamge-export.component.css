@@ -1,0 +1,261 @@
+.export-section {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+}
+
+.customize-card,
+.preview-card {
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  border-radius: var(--radius-xl);
+  padding: clamp(1rem, 2vw, 1.55rem);
+}
+
+.export-header,
+.export-actions,
+.stat-toggle {
+  align-items: center;
+  display: flex;
+}
+
+.export-header {
+  gap: 0.85rem;
+  margin-bottom: 1.4rem;
+}
+
+.title-icon {
+  color: var(--accent);
+  display: inline-flex;
+}
+
+.title-icon svg,
+.export-actions svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.title-icon svg {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+h2,
+h3,
+p,
+blockquote {
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.15rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.export-header p {
+  color: var(--muted-foreground);
+}
+
+.toggle-grid,
+.style-toggle-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.style-toggle-grid {
+  margin-top: 1rem;
+}
+
+.stat-toggle {
+  background: color-mix(in srgb, var(--secondary) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 56%, transparent);
+  border-radius: 1rem;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  justify-content: space-between;
+  padding: 0.6rem 0.8rem 0.6rem 1rem;
+}
+
+.stat-toggle:focus-visible,
+.primary-action:focus-visible,
+.secondary-action:focus-visible {
+  outline: 2px solid var(--ring);
+}
+
+.switch {
+  align-items: center;
+  background: color-mix(in srgb, var(--background) 72%, transparent);
+  border-radius: 999px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 1.55rem;
+  justify-content: flex-start;
+  padding: 0.18rem;
+  width: 2.7rem;
+}
+
+.switch span {
+  background: var(--muted-foreground);
+  border-radius: 999px;
+  height: 1.05rem;
+  width: 1.05rem;
+}
+
+.enabled-toggle .switch {
+  background: var(--accent);
+}
+
+.enabled-toggle .switch span {
+  background: var(--accent-foreground);
+  transform: translateX(1.12rem);
+}
+
+.export-actions {
+  gap: 0.7rem;
+  margin-top: 1.7rem;
+}
+
+.primary-action,
+.secondary-action {
+  align-items: center;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-weight: 800;
+  gap: 0.55rem;
+  padding: 0.65rem 1.1rem;
+}
+
+.primary-action {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.secondary-action {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  color: var(--foreground);
+}
+
+.export-actions svg {
+  height: 1rem;
+  width: 1rem;
+}
+
+.export-preview {
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  border-radius: var(--radius-xl);
+  padding: clamp(1rem, 2.2vw, 1.9rem);
+}
+
+.preview-topline,
+.metric-grid,
+.geo-note {
+  margin-top: 1.35rem;
+}
+
+.preview-topline {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.preview-topline span {
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.28em;
+}
+
+.strava-logo {
+  display: block;
+  height: 1.35rem;
+  object-fit: contain;
+  width: auto;
+}
+
+h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  margin-top: 1rem;
+}
+
+.preview-range {
+  color: var(--muted-foreground);
+  margin-top: 0.55rem;
+}
+
+.activity-pill {
+  border: 1px solid color-mix(in srgb, var(--accent) 72%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  display: inline-flex;
+  font-size: 0.84rem;
+  margin-top: 1rem;
+  padding: 0.3rem 0.65rem;
+}
+
+.metric-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+}
+
+.metric-card {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  border-radius: 0.9rem;
+  display: grid;
+  padding: 0.9rem;
+}
+
+.plain-metric-grid .metric-card {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.compact-metric-grid .metric-card {
+  padding: 0.65rem;
+}
+
+.metric-card span {
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+}
+
+.metric-card strong {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+}
+
+.compact-metric-grid .metric-card strong {
+  font-size: 1rem;
+}
+
+.geo-note {
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  border-radius: 0.85rem;
+  padding: 0.85rem 1rem;
+}
+
+.geo-note strong {
+  color: var(--accent);
+}
+
+blockquote {
+  border-top: 1px solid color-mix(in srgb, var(--border) 42%, transparent);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-style: italic;
+  margin-top: 1.35rem;
+  padding-top: 1.2rem;
+}

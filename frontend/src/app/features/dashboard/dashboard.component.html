@@ -91,6 +91,13 @@
                 <path d="M4 12h3l2-6 4 12 2-6h5" />
               </svg>
             }
+            @case ('export') {
+              <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                <path d="M12 3v12" />
+                <path d="m7 10 5 5 5-5" />
+                <path d="M5 19h14" />
+              </svg>
+            }
           }
           <span>{{ item.label }}</span>
         </a>
@@ -200,6 +207,21 @@
       (focusin)="setActiveSection('activities')"
     >
       <app-activities [range]="selectedRange()" [activity]="selectedActivity()" />
+    </section>
+
+    <section
+      id="export-section"
+      class="export-feature-row"
+      aria-label="Customize image export"
+      (mouseenter)="setActiveSection('export')"
+      (focusin)="setActiveSection('export')"
+    >
+      <app-iamge-export
+        [username]="userProfile().displayName"
+        [range]="selectedRange()"
+        [activity]="selectedActivity()"
+        [quote]="dailyQuotes().quotes[0]"
+      />
     </section>
   </main>
 </div>

@@ -1,0 +1,177 @@
+<section class="export-section" aria-labelledby="customize-export-title">
+  <article class="customize-card" aria-labelledby="customize-export-title">
+    <header class="export-header">
+      <span class="title-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M12 3v12" />
+          <path d="m7 10 5 5 5-5" />
+          <path d="M5 19h14" />
+        </svg>
+      </span>
+      <div>
+        <h2 id="customize-export-title">Customize Export</h2>
+        <p>Toggles update preview live</p>
+      </div>
+    </header>
+
+    <div class="toggle-grid" aria-label="Image export stats">
+      @for (option of statOptions; track option.key) {
+        <button
+          type="button"
+          class="stat-toggle"
+          [class.enabled-toggle]="isEnabled(option.key)"
+          [attr.aria-pressed]="isEnabled(option.key)"
+          (click)="toggleStat(option.key)"
+        >
+          <span>{{ option.label }}</span>
+          <span class="switch" aria-hidden="true">
+            <span></span>
+          </span>
+        </button>
+      }
+    </div>
+
+    <div class="export-actions">
+      <button type="button" class="primary-action" [disabled]="isExporting()" (click)="exportPng()">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 3v12" />
+          <path d="m7 10 5 5 5-5" />
+          <path d="M5 19h14" />
+        </svg>
+        <span>{{ isExporting() ? 'Saving...' : 'Export Image' }}</span>
+      </button>
+
+      <button type="button" class="secondary-action" (click)="resetStats()">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M3 12a9 9 0 0 1 15.3-6.4" />
+          <path d="M18 3v5h-5" />
+          <path d="M21 12a9 9 0 0 1-15.3 6.4" />
+          <path d="M6 21v-5h5" />
+        </svg>
+        <span>Reset</span>
+      </button>
+    </div>
+
+    <div class="style-toggle-grid" aria-label="Image export style options">
+      <button
+        type="button"
+        class="stat-toggle"
+        [class.enabled-toggle]="isStyleEnabled('plainStats')"
+        [attr.aria-pressed]="isStyleEnabled('plainStats')"
+        (click)="toggleStyle('plainStats')"
+      >
+        <span>Plain Stats</span>
+        <span class="switch" aria-hidden="true">
+          <span></span>
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="stat-toggle"
+        [class.enabled-toggle]="isStyleEnabled('compactStats')"
+        [attr.aria-pressed]="isStyleEnabled('compactStats')"
+        (click)="toggleStyle('compactStats')"
+      >
+        <span>Compact Stats</span>
+        <span class="switch" aria-hidden="true">
+          <span></span>
+        </span>
+      </button>
+    </div>
+  </article>
+
+  <article class="preview-card" aria-labelledby="export-preview-title">
+    <header class="export-header">
+      <span class="title-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <path d="m8 15 3-3 2 2 3-4" />
+        </svg>
+      </span>
+      <div>
+        <h2 id="export-preview-title">Export Preview</h2>
+        <p>Social-media ready · transparent on export</p>
+      </div>
+    </header>
+
+    <div class="export-preview">
+      <div class="preview-topline">
+        <span>StravaXport</span>
+        @if (isEnabled('stravaLogo')) {
+          <img class="strava-logo" src="/strava-logo.png" alt="Strava" />
+        }
+      </div>
+
+      @if (isEnabled('userName')) {
+        <h3>{{ username() }}</h3>
+      }
+
+      @if (isEnabled('dateRange')) {
+        <p class="preview-range">{{ dateRangeLabel() }}</p>
+      }
+
+      @if (isEnabled('activityType')) {
+        <p class="activity-pill">{{ activityLabel() }}</p>
+      }
+
+      <div
+        class="metric-grid"
+        [class.plain-metric-grid]="isStyleEnabled('plainStats')"
+        [class.compact-metric-grid]="isStyleEnabled('compactStats')"
+      >
+        @if (isEnabled('distance')) {
+          <div class="metric-card">
+            <span>Distance</span>
+            <strong>133.6 km</strong>
+          </div>
+        }
+        @if (isEnabled('movingTime')) {
+          <div class="metric-card">
+            <span>Moving Time</span>
+            <strong>8h 57m</strong>
+          </div>
+        }
+        @if (isEnabled('averagePace')) {
+          <div class="metric-card">
+            <span>Avg Pace</span>
+            <strong>5:46/km</strong>
+          </div>
+        }
+        @if (isEnabled('speed')) {
+          <div class="metric-card">
+            <span>Speed</span>
+            <strong>19.2 km/h</strong>
+          </div>
+        }
+        @if (isEnabled('heartRate')) {
+          <div class="metric-card">
+            <span>Heart Rate</span>
+            <strong>150 bpm</strong>
+          </div>
+        }
+        @if (isEnabled('cadence')) {
+          <div class="metric-card">
+            <span>Cadence</span>
+            <strong>164 spm</strong>
+          </div>
+        }
+        @if (isEnabled('elevationGain')) {
+          <div class="metric-card">
+            <span>Elevation</span>
+            <strong>1256 m</strong>
+          </div>
+        }
+      </div>
+
+      @if (isEnabled('geographicalData')) {
+        <p class="geo-note">That's <strong>7.2%</strong> the length of the Philippines and <strong>43%</strong> of Mt. Apo's height.</p>
+      }
+
+      @if (isEnabled('motivationalQuote') && quote(); as dailyQuote) {
+        <blockquote>{{ dailyQuote.text }}</blockquote>
+      }
+
+    </div>
+  </article>
+</section>
