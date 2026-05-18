@@ -48,7 +48,11 @@ export class ProgressGraphComponent {
 
   readonly chart = computed(() => buildChart(this.progress().points, this.selectedActivity()));
   readonly summary = computed(() => this.progress().summary);
-  readonly subtitle = computed(() => `Weekly distance - ${this.progress().points.length} weeks`);
+  readonly subtitle = computed(() => {
+    const points = this.progress().points;
+    const isDaily = points.some((point) => !point.label.startsWith('W'));
+    return `${isDaily ? 'Daily' : 'Weekly'} distance - ${points.length} ${isDaily ? 'days' : 'weeks'}`;
+  });
 
   private requestId = 0;
 
@@ -112,7 +116,7 @@ function buildChart(
   const left = 10;
   const right = 250;
   const seriesKeys: Array<Exclude<ProgressActivityType, 'all'>> =
-    activityType === 'all' ? ['walk', 'ride'] : [activityType];
+    activityType === 'all' ? ['walk', 'ride', 'run'] : [activityType];
   const visibleKeys = seriesKeys.filter((key) => points.some((point) => getSeriesDistance(point, key) > 0));
   const maxDistance = Math.max(
     ...visibleKeys.flatMap((key) => points.map((point) => getSeriesDistance(point, key))),
@@ -121,14 +125,19 @@ function buildChart(
   const labels = buildSeriesPoints(points, 'walk', maxDistance, top, bottom, left, right);
   const series = visibleKeys.map((key) => {
     const seriesPoints = buildSeriesPoints(points, key, maxDistance, top, bottom, left, right);
-    const linePath = seriesPoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+    const linePath =
+      seriesPoints.length === 1
+        ? `M ${left} ${seriesPoints[0].y} L ${right} ${seriesPoints[0].y}`
+        : seriesPoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
     const areaPath = seriesPoints.length
-      ? `${linePath} L ${seriesPoints[seriesPoints.length - 1]?.x ?? right} ${bottom} L ${seriesPoints[0]?.x ?? left} ${bottom} Z`
+      ? `${linePath} L ${seriesPoints.length === 1 ? right : seriesPoints[seriesPoints.length - 1]?.x ?? right} ${bottom} L ${
+          seriesPoints.length === 1 ? left : seriesPoints[0]?.x ?? left
+        } ${bottom} Z`
       : '';
 
     return {
       key,
-      label: key === 'walk' ? 'Walking' : 'Biking',
+      label: getSeriesLabel(key),
       areaPath,
       linePath,
       points: seriesPoints,
@@ -168,5 +177,25 @@ function buildSeriesPoints(
 }
 
 function getSeriesDistance(point: ProgressPoint, key: Exclude<ProgressActivityType, 'all'>): number {
-  return key === 'walk' ? point.walkDistanceKm : point.rideDistanceKm;
+  if (key === 'walk') {
+    return point.walkDistanceKm;
+  }
+
+  if (key === 'ride') {
+    return point.rideDistanceKm;
+  }
+
+  return point.runDistanceKm;
+}
+
+function getSeriesLabel(key: Exclude<ProgressActivityType, 'all'>): string {
+  if (key === 'walk') {
+    return 'Walking';
+  }
+
+  if (key === 'ride') {
+    return 'Biking';
+  }
+
+  return 'Running';
 }

@@ -30,7 +30,11 @@
           }
 
           @for (series of chart().series; track series.key) {
-            <g class="series-layer" [class.ride-series]="series.key === 'ride'">
+            <g
+              class="series-layer"
+              [class.ride-series]="series.key === 'ride'"
+              [class.run-series]="series.key === 'run'"
+            >
               <path class="area-path" [attr.d]="series.areaPath" />
               <path class="line-path" [attr.d]="series.linePath" />
 
@@ -86,6 +90,15 @@
         <button
           type="button"
           class="summary-toggle"
+          [class.active-summary-toggle]="selectedActivity() === 'walk'"
+          [attr.aria-pressed]="selectedActivity() === 'walk'"
+          (click)="toggleActivity('walk')"
+        >
+          Walk
+        </button>
+        <button
+          type="button"
+          class="summary-toggle"
           [class.active-summary-toggle]="selectedActivity() === 'ride'"
           [attr.aria-pressed]="selectedActivity() === 'ride'"
           (click)="toggleActivity('ride')"
@@ -95,11 +108,11 @@
         <button
           type="button"
           class="summary-toggle"
-          [class.active-summary-toggle]="selectedActivity() === 'walk'"
-          [attr.aria-pressed]="selectedActivity() === 'walk'"
-          (click)="toggleActivity('walk')"
+          [class.active-summary-toggle]="selectedActivity() === 'run'"
+          [attr.aria-pressed]="selectedActivity() === 'run'"
+          (click)="toggleActivity('run')"
         >
-          Walk
+          Run
         </button>
       </div>
 

@@ -54,7 +54,7 @@ function buildProgressData(
   activityType: ProgressActivityType,
 ): ProgressGraphData {
   const filtered = activities.filter((activity) => matchesActivityType(activity, activityType));
-  const buckets = buildWeekBuckets(range);
+  const buckets = buildBuckets(range);
 
   for (const activity of filtered) {
     const activityDate = parseActivityDate(activity);
@@ -71,6 +71,8 @@ function buildProgressData(
         bucket.walkDistanceKm += distanceKm;
       } else if (normalizedType === 'ride') {
         bucket.rideDistanceKm += distanceKm;
+      } else if (normalizedType === 'run') {
+        bucket.runDistanceKm += distanceKm;
       }
 
       bucket.distanceKm += distanceKm;
@@ -84,6 +86,7 @@ function buildProgressData(
       distanceKm: roundOne(bucket.distanceKm),
       walkDistanceKm: roundOne(bucket.walkDistanceKm),
       rideDistanceKm: roundOne(bucket.rideDistanceKm),
+      runDistanceKm: roundOne(bucket.runDistanceKm),
     })),
     summary: {
       totalActivities: filtered.length,
@@ -96,13 +99,15 @@ function buildProgressData(
 }
 
 function createMockProgress(range: DateRange, activityType: ProgressActivityType): ProgressGraphData {
-  const buckets = buildWeekBuckets(range);
+  const buckets = buildBuckets(range);
   const walkDistances = [4.8, 7.2, 6.4, 10.1, 8.8, 12.0, 13.5, 16.4];
   const rideDistances = [8.4, 11.6, 9.8, 15.2, 13.5, 18.3, 16.7, 21.1];
+  const runDistances = [3.2, 5.4, 4.7, 6.1, 5.8, 7.2, 6.6, 8.4];
   const distancesByActivity: Record<ProgressActivityType, readonly number[]> = {
-    all: walkDistances.map((distance, index) => distance + (rideDistances[index] ?? 0)),
-    walk: [1.6, 2.2, 1.9, 3.1, 2.8, 3.4, 2.7, 3.9],
+    all: walkDistances.map((distance, index) => distance + (rideDistances[index] ?? 0) + (runDistances[index] ?? 0)),
+    walk: walkDistances,
     ride: rideDistances,
+    run: runDistances,
   };
   const distances = distancesByActivity[activityType];
   const points: ProgressPoint[] = buckets.map((bucket, index) => ({
@@ -110,26 +115,51 @@ function createMockProgress(range: DateRange, activityType: ProgressActivityType
     rangeLabel: formatRange(bucket.start, bucket.end),
     distanceKm: roundOne(distances[index % distances.length] ?? 0),
     walkDistanceKm:
-      activityType === 'ride' ? 0 : roundOne(walkDistances[index % walkDistances.length] ?? 0),
+      activityType === 'ride' || activityType === 'run' ? 0 : roundOne(walkDistances[index % walkDistances.length] ?? 0),
     rideDistanceKm:
-      activityType === 'walk' ? 0 : roundOne(rideDistances[index % rideDistances.length] ?? 0),
+      activityType === 'walk' || activityType === 'run' ? 0 : roundOne(rideDistances[index % rideDistances.length] ?? 0),
+    runDistanceKm:
+      activityType === 'walk' || activityType === 'ride' ? 0 : roundOne(runDistances[index % runDistances.length] ?? 0),
   }));
+  const totalDistanceKm = roundOne(points.reduce((total, point) => total + getPointDistance(point, activityType), 0));
 
   return {
     points,
     summary: {
-      totalActivities: 0,
-      totalDistanceKm: 0,
-      totalMovingTimeSeconds: 0,
-      totalElevationM: 0,
+      totalActivities: Math.max(1, points.length * (activityType === 'all' ? 3 : 1)),
+      totalDistanceKm,
+      totalMovingTimeSeconds: Math.round(totalDistanceKm * (activityType === 'ride' ? 190 : activityType === 'run' ? 360 : 720)),
+      totalElevationM: Math.round(totalDistanceKm * (activityType === 'ride' ? 5.2 : activityType === 'run' ? 3.8 : 2.4)),
       rangeLabel: formatRange(range.start, range.end),
     },
   };
 }
 
+function buildBuckets(
+  range: DateRange,
+): Array<{
+  label: string;
+  start: Date;
+  end: Date;
+  distanceKm: number;
+  walkDistanceKm: number;
+  rideDistanceKm: number;
+  runDistanceKm: number;
+}> {
+  return getInclusiveDayCount(range) <= 7 ? buildDayBuckets(range) : buildWeekBuckets(range);
+}
+
 function buildWeekBuckets(
   range: DateRange,
-): Array<{ label: string; start: Date; end: Date; distanceKm: number; walkDistanceKm: number; rideDistanceKm: number }> {
+): Array<{
+  label: string;
+  start: Date;
+  end: Date;
+  distanceKm: number;
+  walkDistanceKm: number;
+  rideDistanceKm: number;
+  runDistanceKm: number;
+}> {
   const start = startOfDay(range.start);
   const rangeEnd = startOfDay(range.end);
   const buckets: Array<{
@@ -139,18 +169,33 @@ function buildWeekBuckets(
     distanceKm: number;
     walkDistanceKm: number;
     rideDistanceKm: number;
+    runDistanceKm: number;
   }> = [];
   let cursor = start;
   let index = 1;
 
   while (cursor.getTime() <= rangeEnd.getTime()) {
     const end = minDate(addDays(cursor, 6), rangeEnd);
-    buckets.push({ label: `W${index}`, start: cursor, end, distanceKm: 0, walkDistanceKm: 0, rideDistanceKm: 0 });
+    buckets.push(createBucket(`W${index}`, cursor, end));
     cursor = addDays(end, 1);
     index += 1;
   }
 
   return buckets;
+}
+
+function buildDayBuckets(range: DateRange): ReturnType<typeof buildWeekBuckets> {
+  const start = startOfDay(range.start);
+  const dayCount = getInclusiveDayCount(range);
+
+  return Array.from({ length: dayCount }, (_, index) => {
+    const date = addDays(start, index);
+    return createBucket(formatDayLabel(date), date, date);
+  });
+}
+
+function createBucket(label: string, start: Date, end: Date): ReturnType<typeof buildWeekBuckets>[number] {
+  return { label, start, end, distanceKm: 0, walkDistanceKm: 0, rideDistanceKm: 0, runDistanceKm: 0 };
 }
 
 function matchesActivityType(activity: StravaActivity, activityType: ProgressActivityType): boolean {
@@ -166,6 +211,10 @@ function normalizeActivityType(activity: StravaActivity): Exclude<ProgressActivi
 
   if (normalized.includes('walk')) {
     return 'walk';
+  }
+
+  if (normalized.includes('run')) {
+    return 'run';
   }
 
   if (normalized.includes('ride') || normalized.includes('bike') || normalized.includes('cycling')) {
@@ -197,6 +246,28 @@ function addDays(date: Date, days: number): Date {
   return next;
 }
 
+function getInclusiveDayCount(range: DateRange): number {
+  const start = startOfDay(range.start).getTime();
+  const end = startOfDay(range.end).getTime();
+  return Math.floor((end - start) / 86_400_000) + 1;
+}
+
+function getPointDistance(point: ProgressPoint, activityType: ProgressActivityType): number {
+  if (activityType === 'walk') {
+    return point.walkDistanceKm;
+  }
+
+  if (activityType === 'ride') {
+    return point.rideDistanceKm;
+  }
+
+  if (activityType === 'run') {
+    return point.runDistanceKm;
+  }
+
+  return point.distanceKm;
+}
+
 function minDate(first: Date, second: Date): Date {
   return first.getTime() <= second.getTime() ? first : second;
 }
@@ -218,6 +289,11 @@ function formatRange(start: Date, end: Date): string {
 
 function formatShortDate(date: Date): string {
   return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+}
+
+function formatDayLabel(date: Date): string {
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+  return `${weekday} ${date.getDate()}`;
 }
 
 function roundOne(value: number): number {

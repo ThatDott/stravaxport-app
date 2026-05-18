@@ -130,6 +130,11 @@ h3 {
   color: #f97316;
 }
 
+.activity-icon.run-icon {
+  background: color-mix(in srgb, #22c55e 18%, var(--secondary));
+  color: #22c55e;
+}
+
 .activity-copy {
   min-width: 0;
 }
@@ -159,6 +164,11 @@ h3 {
 .activity-badge.bike-badge {
   background: color-mix(in srgb, #f97316 18%, var(--secondary));
   color: #f97316;
+}
+
+.activity-badge.run-badge {
+  background: color-mix(in srgb, #22c55e 18%, var(--secondary));
+  color: #22c55e;
 }
 
 .activity-stats {

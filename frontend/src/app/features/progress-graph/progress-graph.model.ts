@@ -1,4 +1,4 @@
-export type ProgressActivityType = 'all' | 'walk' | 'ride';
+export type ProgressActivityType = 'all' | 'walk' | 'ride' | 'run';
 
 export interface ProgressActivityOption {
   value: ProgressActivityType;
@@ -11,6 +11,7 @@ export interface ProgressPoint {
   distanceKm: number;
   walkDistanceKm: number;
   rideDistanceKm: number;
+  runDistanceKm: number;
 }
 
 export interface ProgressSummary {

@@ -1,3 +1,5 @@
+import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
+
 export type OverviewMetricKey =
   | 'activities'
   | 'distance'
@@ -76,5 +78,21 @@ export const MOCK_OVERVIEW_DATA: Record<ProgressActivityType, OverviewMockData> 
       { key: 'days-active', label: 'Days Active', value: '5 days', trend: 'up' },
     ],
   },
+  run: {
+    activityLabel: 'Running',
+    encouragement: 'Your running rhythm is getting sharper. Keep the effort steady.',
+    metrics: [
+      { key: 'activities', label: 'Total Activities', value: '7' },
+      { key: 'distance', label: 'Total Distance', value: '38.4 km', trend: 'up' },
+      { key: 'moving-time', label: 'Moving Time', value: '3h 42m' },
+      { key: 'avg-distance', label: 'Avg Distance', value: '5.5 km' },
+      { key: 'avg-time', label: 'Avg Time', value: '32 min' },
+      { key: 'avg-pace', label: 'Avg Pace', value: '5:47/km', trend: 'up' },
+      { key: 'avg-speed', label: 'Avg Speed', value: '10.4 km/h' },
+      { key: 'total-elevation', label: 'Total Elevation', value: '238 m' },
+      { key: 'avg-elevation', label: 'Avg Elevation', value: '34 m' },
+      { key: 'avg-cadence', label: 'Avg Cadence', value: '164' },
+      { key: 'days-active', label: 'Days Active', value: '6 days', trend: 'up' },
+    ],
+  },
 };
-import type { ProgressActivityType } from '../progress-graph/progress-graph.model';

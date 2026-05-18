@@ -1,3 +1,5 @@
+import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
+
 export interface AiInsightMetric {
   metric_name: string;
   current_value: number;
@@ -6,6 +8,7 @@ export interface AiInsightMetric {
 }
 
 export interface AiInsight {
+  activity_type?: ProgressActivityType;
   insight_type: string;
   title: string;
   description: string;

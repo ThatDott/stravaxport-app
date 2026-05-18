@@ -87,6 +87,10 @@ function normalizeActivityType(activity: StravaActivity): ActivityItem['activity
     return 'walk';
   }
 
+  if (normalized.includes('run')) {
+    return 'run';
+  }
+
   if (normalized.includes('ride') || normalized.includes('bike') || normalized.includes('cycling')) {
     return 'ride';
   }
@@ -135,7 +139,7 @@ function groupActivities(activities: readonly ActivityItem[]): readonly Activity
 
 function createMockActivities(range: DateRange): readonly ActivityItem[] {
   const end = startOfDay(range.end);
-  const dates = [0, 1, 3, 5, 7, 10].map((offset) => addDays(end, -offset));
+  const dates = [0, 1, 2, 3, 5, 7, 9, 10, 12].map((offset) => addDays(end, -offset));
   const seed: Array<Omit<ActivityItem, 'date'>> = [
     {
       id: 'walk-1',
@@ -158,6 +162,16 @@ function createMockActivities(range: DateRange): readonly ActivityItem[] {
       elevationM: 180,
     },
     {
+      id: 'run-1',
+      name: 'Steady Run',
+      activityType: 'run',
+      distanceKm: 6.4,
+      movingTimeSeconds: 38 * 60,
+      paceLabel: '5:56/km',
+      speedLabel: '10.1 km/h',
+      elevationM: 54,
+    },
+    {
       id: 'walk-2',
       name: 'Easy Walk',
       activityType: 'walk',
@@ -166,6 +180,16 @@ function createMockActivities(range: DateRange): readonly ActivityItem[] {
       paceLabel: '6:03/km',
       speedLabel: '9.9 km/h',
       elevationM: 28,
+    },
+    {
+      id: 'run-2',
+      name: 'Tempo Run',
+      activityType: 'run',
+      distanceKm: 5.8,
+      movingTimeSeconds: 31 * 60,
+      paceLabel: '5:21/km',
+      speedLabel: '11.2 km/h',
+      elevationM: 46,
     },
     {
       id: 'ride-2',
@@ -188,6 +212,16 @@ function createMockActivities(range: DateRange): readonly ActivityItem[] {
       elevationM: 18,
     },
     {
+      id: 'run-3',
+      name: 'Recovery Run',
+      activityType: 'run',
+      distanceKm: 4.2,
+      movingTimeSeconds: 27 * 60,
+      paceLabel: '6:26/km',
+      speedLabel: '9.3 km/h',
+      elevationM: 22,
+    },
+    {
       id: 'ride-3',
       name: 'Recovery Bike',
       activityType: 'ride',
@@ -206,7 +240,15 @@ function createMockActivities(range: DateRange): readonly ActivityItem[] {
 }
 
 function defaultActivityName(activityType: ActivityItem['activityType']): string {
-  return activityType === 'ride' ? 'Bike Activity' : 'Walking Activity';
+  if (activityType === 'ride') {
+    return 'Bike Activity';
+  }
+
+  if (activityType === 'run') {
+    return 'Running Activity';
+  }
+
+  return 'Walking Activity';
 }
 
 function formatPace(distanceKm: number, movingTimeSeconds: number): string {

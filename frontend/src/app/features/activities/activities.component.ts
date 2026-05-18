@@ -43,7 +43,15 @@ export class ActivitiesComponent {
   }
 
   activityBadge(activity: ActivityItem): string {
-    return activity.activityType === 'ride' ? 'Bike' : 'Walk';
+    if (activity.activityType === 'ride') {
+      return 'Bike';
+    }
+
+    if (activity.activityType === 'run') {
+      return 'Run';
+    }
+
+    return 'Walk';
   }
 
   primaryMetric(activity: ActivityItem): string {
@@ -94,6 +102,10 @@ function formatActivityLabel(activity: ProgressActivityType): string {
 
   if (activity === 'ride') {
     return 'Biking Activities';
+  }
+
+  if (activity === 'run') {
+    return 'Running Activities';
   }
 
   return 'All Activities';
