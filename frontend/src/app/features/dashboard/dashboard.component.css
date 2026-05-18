@@ -208,18 +208,18 @@
   grid-template-columns: minmax(0, 7fr) minmax(18rem, 3fr);
   max-width: 92rem;
 
+.activity-toggle-feature,
 .calendar-feature,
 .ai-insights-feature {
   min-width: 0;
   width: 100%;
 }
 
-.calendar-feature {
-  display: grid;
-  gap: 1rem;
+.quote-feature-row {
+  grid-column: 1 / -1;
 }
 
-.quote-feature-row,.overview-feature-row,.progress-feature-row,.activities-feature-row {
+.overview-feature-row,.progress-feature-row,.activities-feature-row {
   width: 100%;
 }
 
@@ -246,6 +246,7 @@
     align-items: stretch;
     grid-template-columns: 1fr;
   }
+
 }
 
 @media (max-width: 42rem) {

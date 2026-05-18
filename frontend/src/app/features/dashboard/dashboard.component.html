@@ -109,17 +109,23 @@
     </header>
 
     <section class="feature-grid" aria-label="Dashboard planning tools">
+      <div class="activity-toggle-feature">
+        <app-activity-toggle
+          [selectedActivity]="selectedActivity()"
+          (activityChange)="selectActivity($event)"
+        />
+      </div>
+
+      <div class="quote-feature-row">
+        <app-motivational-quote [response]="dailyQuotes()" />
+      </div>
+
       <div
         id="calendar-section"
         class="calendar-feature"
         (mouseenter)="setActiveSection('calendar')"
         (focusin)="setActiveSection('calendar')"
       >
-        <app-activity-toggle
-          [selectedActivity]="selectedActivity()"
-          (activityChange)="selectActivity($event)"
-        />
-
         <app-calendar [range]="selectedRange()" (rangeChange)="updateDateRange($event)" />
       </div>
 
@@ -131,10 +137,6 @@
       >
         <app-ai-insights [range]="selectedRange()" [response]="aiInsights()" />
       </div>
-    </section>
-
-    <section class="quote-feature-row" aria-label="Daily motivational note">
-      <app-motivational-quote [response]="dailyQuotes()" />
     </section>
 
     <section

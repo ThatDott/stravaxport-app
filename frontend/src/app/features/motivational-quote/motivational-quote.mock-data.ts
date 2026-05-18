@@ -5,8 +5,8 @@ export const MOCK_DAILY_QUOTES_RESPONSE: DailyQuotesResponse = {
   quotes: [
     {
       id: 1,
-      text: 'Progress is built one step at a time.',
-      author: 'Daily mantra',
+      text: '"Success is the sum of small efforts, repeated day-in and day-out."',
+      author: '— Robert Collier',
       category: 'motivation',
     },
   ],
