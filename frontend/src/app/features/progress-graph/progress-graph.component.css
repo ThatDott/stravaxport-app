@@ -92,8 +92,12 @@ h2 {
   color: var(--accent);
 }
 
-.series-layer.ride-series {
+.ride-series {
   color: #f97316;
+}
+
+.run-series {
+  color: #22c55e;
 }
 
 .grid-line {
@@ -192,7 +196,7 @@ dd {
   border-radius: 999px;
   display: grid;
   gap: 0.3rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 0.3rem;
 }
 
@@ -229,10 +233,14 @@ dd {
   color: var(--accent-foreground);
 }
 
-.summary-toggle:nth-child(2).active-summary-toggle {
+.summary-toggle:nth-child(3).active-summary-toggle {
   background: #f97316;
-  box-shadow: 0 0 18px color-mix(in srgb, #f97316 34%, transparent);
   color: #0f172a;
+}
+
+.summary-toggle:nth-child(4).active-summary-toggle {
+  background: #22c55e;
+  color: #052e16;
 }
 
 .summary-video-frame {

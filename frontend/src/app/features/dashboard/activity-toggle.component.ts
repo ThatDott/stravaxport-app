@@ -5,6 +5,7 @@ const ACTIVITY_OPTIONS: readonly ProgressActivityOption[] = [
   { value: 'all', label: 'All activities' },
   { value: 'walk', label: 'Walking' },
   { value: 'ride', label: 'Biking' },
+  { value: 'run', label: 'Running' },
 ];
 
 @Component({
@@ -20,8 +21,8 @@ const ACTIVITY_OPTIONS: readonly ProgressActivityOption[] = [
           <button
             class="relative z-1 flex size-11 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-[var(--muted-foreground)] transition-colors focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[var(--ring)]"
             type="button"
-            [style.background]="selectedActivity() === option.value ? 'var(--accent)' : null"
-            [style.color]="selectedActivity() === option.value ? 'var(--accent-foreground)' : null"
+            [style.background]="selectedActivity() === option.value ? activeBackground(option.value) : null"
+            [style.color]="selectedActivity() === option.value ? activeColor(option.value) : null"
             [attr.aria-pressed]="selectedActivity() === option.value"
             [attr.aria-label]="option.label"
             (click)="selectActivity(option.value)"
@@ -52,6 +53,16 @@ const ACTIVITY_OPTIONS: readonly ProgressActivityOption[] = [
                   <path d="M14 6h3" />
                 </svg>
               }
+              @case ('run') {
+                <svg class="size-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <circle cx="13" cy="4.5" r="1.8" />
+                  <path d="m10.8 8.2 3.4 1.8 2.1 3.7" />
+                  <path d="m11.4 10.3-2.2 3.4 3.4 2.1" />
+                  <path d="m12.6 15.8-2.5 4.2" />
+                  <path d="m16.4 13.8 2.1 2.8" />
+                  <path d="M7.2 9.4 10.8 8" />
+                </svg>
+              }
             }
           </button>
         }
@@ -66,5 +77,29 @@ export class ActivityToggleComponent {
 
   selectActivity(activity: ProgressActivityType): void {
     this.activityChange.emit(activity);
+  }
+
+  activeBackground(activity: ProgressActivityType): string {
+    if (activity === 'ride') {
+      return '#f97316';
+    }
+
+    if (activity === 'run') {
+      return '#22c55e';
+    }
+
+    return 'var(--accent)';
+  }
+
+  activeColor(activity: ProgressActivityType): string {
+    if (activity === 'ride') {
+      return '#0f172a';
+    }
+
+    if (activity === 'run') {
+      return '#052e16';
+    }
+
+    return 'var(--accent-foreground)';
   }
 }

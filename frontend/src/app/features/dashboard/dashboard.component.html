@@ -135,7 +135,7 @@
         (mouseenter)="setActiveSection('ai-insights')"
         (focusin)="setActiveSection('ai-insights')"
       >
-        <app-ai-insights [range]="selectedRange()" [response]="aiInsights()" />
+        <app-ai-insights [range]="selectedRange()" [activity]="selectedActivity()" [response]="aiInsights()" />
       </div>
     </section>
 

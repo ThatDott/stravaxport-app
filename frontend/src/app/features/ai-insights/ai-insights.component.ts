@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { DateRange } from '../calendar/calendar.component';
+import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
 import type { AiInsight, AiInsightResponse } from './ai-insights.model';
 
 @Component({
@@ -11,8 +12,17 @@ import type { AiInsight, AiInsightResponse } from './ai-insights.model';
 export class AiInsightsComponent {
   readonly response = input.required<AiInsightResponse>();
   readonly range = input.required<DateRange>();
+  readonly activity = input.required<ProgressActivityType>();
 
-  readonly primaryInsight = computed<AiInsight | null>(() => this.response().insights[0] ?? null);
+  readonly primaryInsight = computed<AiInsight | null>(() => {
+    const activity = this.activity();
+    return (
+      this.response().insights.find((insight) => insight.activity_type === activity) ??
+      this.response().insights.find((insight) => insight.activity_type === 'all') ??
+      this.response().insights[0] ??
+      null
+    );
+  });
   readonly guidance = computed(() => this.primaryInsight()?.recommendations[0] ?? null);
   readonly rangeLabel = computed(() => formatDateRange(this.range()));
 }
