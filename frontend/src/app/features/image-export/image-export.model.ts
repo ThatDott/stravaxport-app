@@ -6,7 +6,6 @@ export type ImageExportStatKey =
   | 'movingTime'
   | 'averagePace'
   | 'speed'
-  | 'heartRate'
   | 'cadence'
   | 'elevationGain'
   | 'dateRange'

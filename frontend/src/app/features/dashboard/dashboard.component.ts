@@ -6,7 +6,7 @@ import { AiInsightsComponent } from '../ai-insights/ai-insights.component';
 import { MOCK_AI_INSIGHTS_RESPONSE } from '../ai-insights/ai-insights.mock-data';
 import { AverageStatsComponent } from '../average-stats/average-stats.component';
 import { CalendarComponent, DateRange } from '../calendar/calendar.component';
-import { IamgeExportComponent } from '../iamge-export/iamge-export.component';
+import { ImageExportComponent } from '../image-export/image-export.component';
 import { MotivationalQuoteComponent } from '../motivational-quote/motivational-quote.component';
 import { MOCK_DAILY_QUOTES_RESPONSE } from '../motivational-quote/motivational-quote.mock-data';
 import { MotivationalQuoteService } from '../motivational-quote/motivational-quote.service';
@@ -51,7 +51,7 @@ const SIDEBAR_ITEMS: readonly SidebarItem[] = [
     ActivitiesComponent,
     CalendarComponent,
     AverageStatsComponent,
-    IamgeExportComponent,
+    ImageExportComponent,
     ActivityToggleComponent,
     MotivationalQuoteComponent,
     NgOptimizedImage,

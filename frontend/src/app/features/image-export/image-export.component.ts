@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 import type { DateRange } from '../calendar/calendar.component';
 import type { MotivationalQuote } from '../motivational-quote/motivational-quote.model';
 import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
-import type { ImageExportPayload, ImageExportStatKey, ImageExportStats, ImageExportStyleOptions } from './iamge-export.model';
+import type { ImageExportPayload, ImageExportStatKey, ImageExportStats, ImageExportStyleOptions } from './image-export.model';
 
 interface StatOption {
   key: ImageExportStatKey;
@@ -15,7 +15,6 @@ const STAT_OPTIONS: readonly StatOption[] = [
   { key: 'movingTime', label: 'Moving Time' },
   { key: 'averagePace', label: 'Average Pace' },
   { key: 'speed', label: 'Speed' },
-  { key: 'heartRate', label: 'Heart Rate' },
   { key: 'cadence', label: 'Cadence' },
   { key: 'elevationGain', label: 'Elevation Gain' },
   { key: 'dateRange', label: 'Date Range' },
@@ -31,7 +30,6 @@ const DEFAULT_STATS: ImageExportStats = {
   movingTime: true,
   averagePace: true,
   speed: true,
-  heartRate: true,
   cadence: false,
   elevationGain: true,
   dateRange: true,
@@ -47,12 +45,12 @@ const DEFAULT_STYLE_OPTIONS: ImageExportStyleOptions = {
 };
 
 @Component({
-  selector: 'app-iamge-export',
+  selector: 'app-image-export',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './iamge-export.component.html',
-  styleUrl: './iamge-export.component.css',
+  templateUrl: './image-export.component.html',
+  styleUrl: './image-export.component.css',
 })
-export class IamgeExportComponent {
+export class ImageExportComponent {
   readonly username = input.required<string>();
   readonly range = input.required<DateRange>();
   readonly activity = input.required<ProgressActivityType>();
@@ -283,7 +281,6 @@ function buildExportMetrics(stats: ImageExportStats): Array<{ label: string; val
     stats.movingTime ? { label: 'Moving Time', value: '8h 57m' } : null,
     stats.averagePace ? { label: 'Avg Pace', value: '5:46/km' } : null,
     stats.speed ? { label: 'Speed', value: '19.2 km/h' } : null,
-    stats.heartRate ? { label: 'Heart Rate', value: '150 bpm' } : null,
     stats.cadence ? { label: 'Cadence', value: '164 spm' } : null,
     stats.elevationGain ? { label: 'Elevation', value: '1256 m' } : null,
   ].filter((metric) => metric !== null);
