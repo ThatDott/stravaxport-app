@@ -207,6 +207,7 @@
   gap: clamp(1rem, 2vw, 1.6rem);
   grid-template-columns: minmax(0, 7fr) minmax(18rem, 3fr);
   max-width: 92rem;
+}
 
 .activity-toggle-feature,
 .calendar-feature,
