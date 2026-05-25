@@ -40,6 +40,7 @@ async def strava_callback(
     
     # Get user info from Strava to get strava_id
     user_info = await AuthService.get_strava_user_info(tokens["access_token"])
+    tokens["strava_id"] = str(user_info["id"])
     
     # Check if user exists
     existing_user = await crud.get_user(db, str(user_info["id"]))
@@ -62,16 +63,17 @@ async def strava_callback(
     
     return tokens
 
-#WARNING: This endpoint is for development/testing purposes only. Do NOT include in production.
-@router.get("/dev/token", summary="[DEV ONLY] Generate test JWT")
-def get_dev_token():
-    """
-    DELETE THIS IN PRODUCTION
-    Generates a valid JWT for testing without Strava login.
-    """
-    payload = {
-        "sub": "dev_test_user",
-        "exp": datetime.utcnow() + timedelta(days=1)
-    }
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    return {"access_token": token, "token_type": "bearer"}
+if settings.ENABLE_DEV_ROUTES:
+    # WARNING: This endpoint is for development/testing purposes only. Do NOT include in production.
+    @router.get("/dev/token", summary="[DEV ONLY] Generate test JWT")
+    def get_dev_token():
+        """
+        DELETE THIS IN PRODUCTION
+        Generates a valid JWT for testing without Strava login.
+        """
+        payload = {
+            "sub": "dev_test_user",
+            "exp": datetime.utcnow() + timedelta(days=1)
+        }
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+        return {"access_token": token, "token_type": "bearer"}

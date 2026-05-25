@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
+import { environment } from '../../../environments/environment';
 import type { DateRange } from '../calendar/calendar.component';
 import type { ProgressActivityType, ProgressGraphData, ProgressPoint } from './progress-graph.model';
 
@@ -21,7 +22,7 @@ interface StravaActivity {
 export class ProgressGraphService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly apiUrl = 'http://localhost:8000/api/v1/activities';
+  private readonly apiUrl = `${environment.apiBaseUrl}/activities`;
 
   getProgress(range: DateRange, activityType: ProgressActivityType): Observable<ProgressGraphData> {
     const token = this.authService.getToken();

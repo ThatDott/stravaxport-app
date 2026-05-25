@@ -68,7 +68,7 @@ async def seed_test_data():
         
         print("\n🎉 Seed complete! Test data ready.")
         print(f"👉 Use in Swagger: activity_id = {activity_id}")
-        print(f"👉 Auth token: Get from /api/v1/auth/dev/token (sub='{user_id}')")
+        print(f"👉 Auth token: Get from /api/auth/dev/token (sub='{user_id}')")
 
 if __name__ == "__main__":
     asyncio.run(seed_test_data())

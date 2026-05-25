@@ -2,11 +2,13 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 interface StravaToken {
   access_token: string;
   refresh_token?: string;
   expires_at?: number;
+  strava_id?: string;
 }
 
 interface StravaAuthUrl {
@@ -20,7 +22,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
 
-  private readonly API_BASE = 'http://localhost:8000/api/v1/auth';
+  private readonly API_BASE = `${environment.apiBaseUrl}/auth`;
   private readonly TOKEN_KEY = 'strava_token';
   private readonly PREVIEW_KEY = 'stravaxport_dashboard_preview';
 
@@ -50,7 +52,7 @@ export class AuthService {
 
       this.statusMessage.set('The backend did not return a Strava login URL.');
     } catch {
-      this.statusMessage.set('Backend is not running on port 8000. Use Preview dashboard while working on the frontend.');
+      this.statusMessage.set('Unable to reach the backend. Use Preview dashboard while working on the frontend.');
     } finally {
       this.isConnecting.set(false);
     }
@@ -101,13 +103,22 @@ export class AuthService {
       return null;
     }
 
-    try {
-      const parsed: unknown = JSON.parse(tokenData);
+    const parsed = parseToken(tokenData);
+    return parsed?.access_token ?? null;
+  }
 
-      return isStravaToken(parsed) ? parsed.access_token : null;
-    } catch {
+  getStravaId(): string | null {
+    if (!this.isBrowser()) {
       return null;
     }
+
+    const tokenData = localStorage.getItem(this.TOKEN_KEY);
+    if (!tokenData) {
+      return null;
+    }
+
+    const parsed = parseToken(tokenData);
+    return parsed?.strava_id ?? null;
   }
 
   private checkAuthStatus(): void {
@@ -138,4 +149,13 @@ function isStravaToken(value: unknown): value is StravaToken {
   const token = value as Record<string, unknown>;
 
   return typeof token['access_token'] === 'string' && token['access_token'].length > 0;
+}
+
+function parseToken(data: string): StravaToken | null {
+  try {
+    const parsed: unknown = JSON.parse(data);
+    return isStravaToken(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
 }

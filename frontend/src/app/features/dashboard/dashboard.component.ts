@@ -4,6 +4,7 @@ import { AuthService } from '../../core/auth.service';
 import { ActivitiesComponent } from '../activities/activities.component';
 import { AiInsightsComponent } from '../ai-insights/ai-insights.component';
 import { MOCK_AI_INSIGHTS_RESPONSE } from '../ai-insights/ai-insights.mock-data';
+import { AiInsightsService } from '../ai-insights/ai-insights.service';
 import { AverageStatsComponent } from '../average-stats/average-stats.component';
 import { CalendarComponent, DateRange } from '../calendar/calendar.component';
 import { ImageExportComponent } from '../image-export/image-export.component';
@@ -64,6 +65,7 @@ const SIDEBAR_ITEMS: readonly SidebarItem[] = [
 })
 export class DashboardComponent implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly aiInsightsService = inject(AiInsightsService);
   private readonly motivationalQuoteService = inject(MotivationalQuoteService);
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -83,6 +85,7 @@ export class DashboardComponent implements OnInit {
     const section = sectionFromHash(window.location.hash);
     this.activeSection.set(section);
     void this.loadDailyQuotes();
+    void this.loadAiInsights();
   }
 
   updateDateRange(range: DateRange): void {
@@ -128,6 +131,15 @@ export class DashboardComponent implements OnInit {
   private async loadDailyQuotes(): Promise<void> {
     const response = await firstValueFrom(this.motivationalQuoteService.getDailyQuotes());
     this.dailyQuotes.set(response);
+  }
+
+  private async loadAiInsights(): Promise<void> {
+    try {
+      const response = await firstValueFrom(this.aiInsightsService.getInsights());
+      this.aiInsights.set(response);
+    } catch {
+      this.aiInsights.set(MOCK_AI_INSIGHTS_RESPONSE);
+    }
   }
 
   private activityThemeValue(key: keyof ActivityTheme): string | null {

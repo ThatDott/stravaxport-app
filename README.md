@@ -31,10 +31,10 @@ The system exposes a RESTful interface documented via Swagger/OpenAPI.
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/auth/strava/login` | Initiate Strava OAuth flow |
-| `GET` | `/activities` | List user activities (JWT required) |
-| `GET` | `/activities/{id}/comparisons` | Fetch geographical landmark comparisons |
-| `POST` | `/export/image` | Generate shareable PNG export |
+| `GET` | `/api/auth/login` | Initiate Strava OAuth flow |
+| `GET` | `/api/activities` | List user activities (JWT required) |
+| `GET` | `/api/activities/{id}/comparisons` | Fetch geographical landmark comparisons |
+| `POST` | `/api/export/upload` | Upload shareable PNG export |
 
 ## System Architecture
 The project follows **Service-Oriented Architecture (SOA)** principles:

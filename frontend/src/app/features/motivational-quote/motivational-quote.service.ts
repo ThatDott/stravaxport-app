@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, of } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
+import { environment } from '../../../environments/environment';
 import { MOCK_DAILY_QUOTES_RESPONSE } from './motivational-quote.mock-data';
 import type { DailyQuotesResponse } from './motivational-quote.model';
 
@@ -11,7 +12,7 @@ import type { DailyQuotesResponse } from './motivational-quote.model';
 export class MotivationalQuoteService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly apiUrl = 'http://localhost:8000/quotes/';
+  private readonly apiUrl = `${environment.apiBaseUrl}/quotes/daily`;
 
   getDailyQuotes(): Observable<DailyQuotesResponse> {
     const token = this.authService.getToken();
