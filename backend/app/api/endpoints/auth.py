@@ -12,7 +12,7 @@ from app.schemas.user import UserCreate
 from datetime import datetime
 
 # WARNING: The following import is for development/testing purposes only. Do NOT include in production.
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import jwt
 from app.core.config import settings
 
@@ -73,7 +73,7 @@ if settings.ENABLE_DEV_ROUTES:
         """
         payload = {
             "sub": "dev_test_user",
-            "exp": datetime.utcnow() + timedelta(days=1)
+            "exp": datetime.now(timezone.utc) + timedelta(days=1)
         }
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
         return {"access_token": token, "token_type": "bearer"}
