@@ -1,6 +1,6 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map, throwError } from 'rxjs';
+import { Observable, catchError, map, of, throwError } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
 import type { ActivitySummaryResponse } from '../activities/activity-summary.model';
@@ -29,8 +29,34 @@ export class OverviewService {
         headers: new HttpHeaders({ Authorization: 'Bearer ' + token }),
         params,
       })
-      .pipe(map((summary) => buildOverviewData(summary, activity)));
+      .pipe(
+        map((summary) => buildOverviewData(summary, activity)),
+        catchError((error: unknown) => {
+          if (error instanceof HttpErrorResponse && error.status === 404) {
+            return of(buildOverviewData(buildEmptySummary(), activity));
+          }
+          return throwError(() => error);
+        }),
+      );
   }
+}
+
+function buildEmptySummary(): ActivitySummaryResponse {
+  return {
+    total_activities: 0,
+    total_distance_km: 0,
+    total_moving_time_seconds: 0,
+    formatted_moving_time: '0h 0m',
+    avg_distance_km: 0,
+    avg_time_minutes: 0,
+    avg_pace_formatted: '-',
+    avg_speed_kmh: 0,
+    total_elevation_m: 0,
+    avg_elevation_m: 0,
+    avg_cadence: null,
+    avg_hr: null,
+    days_active: 0,
+  };
 }
 
 function buildSummaryParams(range: DateRange, activity: ProgressActivityType): HttpParams {
