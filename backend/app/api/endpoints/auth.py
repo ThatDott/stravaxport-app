@@ -9,10 +9,9 @@ from app.schemas.auth import StravaAuthURL, StravaToken
 from app.db.database import get_db
 from app.db import crud
 from app.schemas.user import UserCreate
-from datetime import datetime
 
 # WARNING: The following import is for development/testing purposes only. Do NOT include in production.
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta, timezone
 import jwt
 from app.core.config import settings
 
