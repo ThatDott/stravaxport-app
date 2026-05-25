@@ -11,9 +11,6 @@ from app.db import crud
 from app.schemas.user import UserCreate
 
 # WARNING: The following import is for development/testing purposes only. Do NOT include in production.
-from datetime import timedelta, timezone
-import jwt
-from app.core.config import settings
 
 router = APIRouter()
 
@@ -61,18 +58,3 @@ async def strava_callback(
         await crud.create_user(db, user_data)
     
     return tokens
-
-if settings.ENABLE_DEV_ROUTES:
-    # WARNING: This endpoint is for development/testing purposes only. Do NOT include in production.
-    @router.get("/dev/token", summary="[DEV ONLY] Generate test JWT")
-    def get_dev_token():
-        """
-        DELETE THIS IN PRODUCTION
-        Generates a valid JWT for testing without Strava login.
-        """
-        payload = {
-            "sub": "dev_test_user",
-            "exp": datetime.now(timezone.utc) + timedelta(days=1)
-        }
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-        return {"access_token": token, "token_type": "bearer"}

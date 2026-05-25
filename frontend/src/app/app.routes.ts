@@ -1,11 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthCallbackComponent } from './shared/auth-callback.component';
-import { Component } from '@angular/core';
-
-@Component({
-  template: ''
-})
-class EmptyComponent {}
+import { HomeComponent } from './shared/home.component';
 
 export const routes: Routes = [
   {
@@ -14,6 +9,10 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: EmptyComponent
-  }
+    component: HomeComponent
+  },
+  {
+    path: '**',
+    redirectTo: ''
+  },
 ];

@@ -33,9 +33,6 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:4200"]
 
-    # Dev-only toggles
-    ENABLE_DEV_ROUTES: bool = False
-
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, value):
