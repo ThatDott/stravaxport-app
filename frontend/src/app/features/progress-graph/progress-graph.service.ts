@@ -1,10 +1,10 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, map, throwError } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
 import type { DateRange } from '../calendar/calendar.component';
-import type { ProgressActivityType, ProgressGraphData, ProgressPoint } from './progress-graph.model';
+import type { ProgressActivityType, ProgressGraphData } from './progress-graph.model';
 
 interface StravaActivity {
   distance?: number;
@@ -28,7 +28,7 @@ export class ProgressGraphService {
     const token = this.authService.getToken();
 
     if (!token) {
-      return of(createMockProgress(range, activityType));
+      return throwError(() => new Error('User is not authenticated.'));
     }
 
     const params = new HttpParams()
@@ -42,10 +42,7 @@ export class ProgressGraphService {
         headers: new HttpHeaders({ Authorization: `Bearer ${token}` }),
         params,
       })
-      .pipe(
-        map((activities) => buildProgressData(range, activities, activityType)),
-        catchError(() => of(createMockProgress(range, activityType))),
-      );
+      .pipe(map((activities) => buildProgressData(range, activities, activityType)));
   }
 }
 
@@ -94,43 +91,6 @@ function buildProgressData(
       totalDistanceKm: roundOne(filtered.reduce((total, activity) => total + (activity.distance ?? 0) / 1000, 0)),
       totalMovingTimeSeconds: filtered.reduce((total, activity) => total + (activity.moving_time ?? 0), 0),
       totalElevationM: Math.round(filtered.reduce((total, activity) => total + (activity.total_elevation_gain ?? 0), 0)),
-      rangeLabel: formatRange(range.start, range.end),
-    },
-  };
-}
-
-function createMockProgress(range: DateRange, activityType: ProgressActivityType): ProgressGraphData {
-  const buckets = buildBuckets(range);
-  const walkDistances = [4.8, 7.2, 6.4, 10.1, 8.8, 12.0, 13.5, 16.4];
-  const rideDistances = [8.4, 11.6, 9.8, 15.2, 13.5, 18.3, 16.7, 21.1];
-  const runDistances = [3.2, 5.4, 4.7, 6.1, 5.8, 7.2, 6.6, 8.4];
-  const distancesByActivity: Record<ProgressActivityType, readonly number[]> = {
-    all: walkDistances.map((distance, index) => distance + (rideDistances[index] ?? 0) + (runDistances[index] ?? 0)),
-    walk: walkDistances,
-    ride: rideDistances,
-    run: runDistances,
-  };
-  const distances = distancesByActivity[activityType];
-  const points: ProgressPoint[] = buckets.map((bucket, index) => ({
-    label: bucket.label,
-    rangeLabel: formatRange(bucket.start, bucket.end),
-    distanceKm: roundOne(distances[index % distances.length] ?? 0),
-    walkDistanceKm:
-      activityType === 'ride' || activityType === 'run' ? 0 : roundOne(walkDistances[index % walkDistances.length] ?? 0),
-    rideDistanceKm:
-      activityType === 'walk' || activityType === 'run' ? 0 : roundOne(rideDistances[index % rideDistances.length] ?? 0),
-    runDistanceKm:
-      activityType === 'walk' || activityType === 'ride' ? 0 : roundOne(runDistances[index % runDistances.length] ?? 0),
-  }));
-  const totalDistanceKm = roundOne(points.reduce((total, point) => total + getPointDistance(point, activityType), 0));
-
-  return {
-    points,
-    summary: {
-      totalActivities: Math.max(1, points.length * (activityType === 'all' ? 3 : 1)),
-      totalDistanceKm,
-      totalMovingTimeSeconds: Math.round(totalDistanceKm * (activityType === 'ride' ? 190 : activityType === 'run' ? 360 : 720)),
-      totalElevationM: Math.round(totalDistanceKm * (activityType === 'ride' ? 5.2 : activityType === 'run' ? 3.8 : 2.4)),
       rangeLabel: formatRange(range.start, range.end),
     },
   };
@@ -251,22 +211,6 @@ function getInclusiveDayCount(range: DateRange): number {
   const start = startOfDay(range.start).getTime();
   const end = startOfDay(range.end).getTime();
   return Math.floor((end - start) / 86_400_000) + 1;
-}
-
-function getPointDistance(point: ProgressPoint, activityType: ProgressActivityType): number {
-  if (activityType === 'walk') {
-    return point.walkDistanceKm;
-  }
-
-  if (activityType === 'ride') {
-    return point.rideDistanceKm;
-  }
-
-  if (activityType === 'run') {
-    return point.runDistanceKm;
-  }
-
-  return point.distanceKm;
 }
 
 function minDate(first: Date, second: Date): Date {

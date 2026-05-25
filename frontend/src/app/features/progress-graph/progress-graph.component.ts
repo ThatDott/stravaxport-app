@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../core/auth.service';
 import type { DateRange } from '../calendar/calendar.component';
 import type { ProgressActivityType, ProgressGraphData, ProgressPoint } from './progress-graph.model';
 import { ProgressGraphService } from './progress-graph.service';
@@ -39,6 +41,8 @@ const EMPTY_PROGRESS: ProgressGraphData = {
 })
 export class ProgressGraphComponent {
   private readonly progressGraphService = inject(ProgressGraphService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   readonly range = input.required<DateRange>();
   readonly selectedActivity = input.required<ProgressActivityType>();
@@ -92,14 +96,26 @@ export class ProgressGraphComponent {
     this.requestId = currentRequestId;
     this.isLoading.set(true);
 
-    const progress = await firstValueFrom(this.progressGraphService.getProgress(range, activity));
-
-    if (currentRequestId !== this.requestId) {
-      return;
+    try {
+      const progress = await firstValueFrom(this.progressGraphService.getProgress(range, activity));
+      if (currentRequestId !== this.requestId) {
+        return;
+      }
+      this.progress.set(progress);
+    } catch {
+      if (currentRequestId === this.requestId) {
+        this.handleAuthError();
+      }
+    } finally {
+      if (currentRequestId === this.requestId) {
+        this.isLoading.set(false);
+      }
     }
+  }
 
-    this.progress.set(progress);
-    this.isLoading.set(false);
+  private handleAuthError(): void {
+    this.authService.logout();
+    void this.router.navigateByUrl('/auth-wall');
   }
 }
 

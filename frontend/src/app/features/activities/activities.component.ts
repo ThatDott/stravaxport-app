@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../core/auth.service';
 import type { DateRange } from '../calendar/calendar.component';
 import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
 import type { ActivityDateGroup, ActivityItem } from './activities.model';
@@ -13,6 +15,8 @@ import { ActivitiesService } from './activities.service';
 })
 export class ActivitiesComponent {
   private readonly activitiesService = inject(ActivitiesService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   private readonly initialVisibleDateGroups = 5;
 
   readonly range = input.required<DateRange>();
@@ -84,14 +88,26 @@ export class ActivitiesComponent {
     this.requestId = currentRequestId;
     this.isLoading.set(true);
 
-    const groups = await firstValueFrom(this.activitiesService.getActivityGroups(range, activity));
-
-    if (currentRequestId !== this.requestId) {
-      return;
+    try {
+      const groups = await firstValueFrom(this.activitiesService.getActivityGroups(range, activity));
+      if (currentRequestId !== this.requestId) {
+        return;
+      }
+      this.groups.set(groups);
+    } catch {
+      if (currentRequestId === this.requestId) {
+        this.handleAuthError();
+      }
+    } finally {
+      if (currentRequestId === this.requestId) {
+        this.isLoading.set(false);
+      }
     }
+  }
 
-    this.groups.set(groups);
-    this.isLoading.set(false);
+  private handleAuthError(): void {
+    this.authService.logout();
+    void this.router.navigateByUrl('/auth-wall');
   }
 }
 

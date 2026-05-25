@@ -1,5 +1,9 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map, throwError } from 'rxjs';
+import { AuthService } from '../../core/auth.service';
+import { environment } from '../../../environments/environment';
+import type { ActivitySummaryResponse } from '../activities/activity-summary.model';
 import type { DateRange } from '../calendar/calendar.component';
 import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
 import type { AverageStats } from './average-stats.model';
@@ -8,51 +12,61 @@ import type { AverageStats } from './average-stats.model';
   providedIn: 'root',
 })
 export class AverageStatsService {
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly apiUrl = `${environment.apiBaseUrl}/activities/summary`;
+
   getAverageStats(range: DateRange, activity: ProgressActivityType): Observable<AverageStats> {
-    return of(createMockAverageStats(range, activity));
+    const token = this.authService.getToken();
+    if (!token) {
+      return throwError(() => new Error('User is not authenticated.'));
+    }
+
+    const params = buildSummaryParams(range, activity);
+
+    return this.http
+      .get<ActivitySummaryResponse>(this.apiUrl, {
+        headers: new HttpHeaders({ Authorization: 'Bearer ' + token }),
+        params,
+      })
+      .pipe(map((summary) => toAverageStats(summary)));
   }
 }
 
-function createMockAverageStats(range: DateRange, activity: ProgressActivityType): AverageStats {
-  const days = Math.max(daysBetween(range.start, range.end) + 1, 1);
-  const activityCount = Math.max(Math.round(days / 3), 1);
-  const profile = mockProfileForActivity(activity);
-  const totalDistanceKm = activityCount * profile.distanceKm;
-  const totalMovingMinutes = activityCount * profile.minutes;
-  const totalElevationM = Math.round(activityCount * profile.elevationM);
+function buildSummaryParams(range: DateRange, activity: ProgressActivityType): HttpParams {
+  let params = new HttpParams()
+    .set('after', formatDate(range.start))
+    .set('before', formatDate(addDays(range.end, 1)));
+
+  if (activity !== 'all') {
+    params = params.set('activity_type', activity);
+  }
+
+  return params;
+}
+
+function toAverageStats(summary: ActivitySummaryResponse): AverageStats {
+  const totalElevationM = Math.round(summary.total_elevation_m ?? 0);
 
   return {
-    averageDistanceKm: roundOne(totalDistanceKm / activityCount),
-    averageTimeMinutes: Math.round(totalMovingMinutes / activityCount),
+    averageDistanceKm: roundOne(summary.avg_distance_km ?? 0),
+    averageTimeMinutes: Math.round(summary.avg_time_minutes ?? 0),
     totalElevationM,
-    activityCount,
+    activityCount: summary.total_activities ?? 0,
     elevationEquivalentPercent: Math.round((totalElevationM / 2954) * 100),
   };
 }
 
-function mockProfileForActivity(activity: ProgressActivityType): { distanceKm: number; minutes: number; elevationM: number } {
-  if (activity === 'walk') {
-    return { distanceKm: 4.9, minutes: 39, elevationM: 46 };
-  }
-
-  if (activity === 'ride') {
-    return { distanceKm: 21.8, minutes: 63, elevationM: 182 };
-  }
-
-  return { distanceKm: 13.4, minutes: 54, elevationM: 125.6 };
+function formatDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
-function daysBetween(start: Date, end: Date): number {
-  const startTime = startOfDay(start).getTime();
-  const endTime = startOfDay(end).getTime();
-
-  return Math.round((endTime - startTime) / 86_400_000);
-}
-
-function startOfDay(date: Date): Date {
+function addDays(date: Date, days: number): Date {
   const next = new Date(date);
-  next.setHours(0, 0, 0, 0);
-
+  next.setDate(next.getDate() + days);
   return next;
 }
 

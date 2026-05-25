@@ -112,26 +112,32 @@
           <span>StravaXport</span>
           <small>The Social Runner</small>
         </p>
-        <p class="welcome-line">
-          Hello, {{ userProfile().displayName }}!
-        </p>
+        @if (userProfile(); as userProfile) {
+          <p class="welcome-line">
+            Hello, {{ userProfile.displayName }}!
+          </p>
+        } @else {
+          <p class="welcome-line">Loading profile...</p>
+        }
       </div>
 
-      <div class="header-actions">
-        <span class="connection-pill">
-          <span class="status-dot" aria-hidden="true"></span>
-          {{ userProfile().connectionLabel }}
-        </span>
-        <button class="avatar-button" type="button" aria-label="Leave dashboard preview" (click)="logout()">
-          <img
-            [ngSrc]="userProfile().avatarUrl"
-            width="54"
-            height="54"
-            alt=""
-            priority
-          />
-        </button>
-      </div>
+      @if (userProfile(); as userProfile) {
+        <div class="header-actions">
+          <span class="connection-pill">
+            <span class="status-dot" aria-hidden="true"></span>
+            {{ userProfile.connectionLabel }}
+          </span>
+          <button class="avatar-button" type="button" aria-label="Log out" (click)="logout()">
+            <img
+              [ngSrc]="userProfile.avatarUrl"
+              width="54"
+              height="54"
+              alt=""
+              priority
+            />
+          </button>
+        </div>
+      }
     </header>
 
     <section class="feature-grid" aria-label="Dashboard planning tools">
@@ -143,7 +149,9 @@
       </div>
 
       <div class="quote-feature-row">
-        <app-motivational-quote [response]="dailyQuotes()" />
+        @if (dailyQuotes(); as dailyQuotes) {
+          <app-motivational-quote [response]="dailyQuotes" />
+        }
       </div>
 
       <div
@@ -161,7 +169,9 @@
         (mouseenter)="setActiveSection('ai-insights')"
         (focusin)="setActiveSection('ai-insights')"
       >
-        <app-ai-insights [range]="selectedRange()" [activity]="selectedActivity()" [response]="aiInsights()" />
+        @if (aiInsights(); as aiInsights) {
+          <app-ai-insights [range]="selectedRange()" [activity]="selectedActivity()" [response]="aiInsights" />
+        }
       </div>
     </section>
 
@@ -216,12 +226,23 @@
       (mouseenter)="setActiveSection('export')"
       (focusin)="setActiveSection('export')"
     >
-      <app-image-export
-        [username]="userProfile().displayName"
-        [range]="selectedRange()"
-        [activity]="selectedActivity()"
-        [quote]="dailyQuotes().quotes[0]"
-      />
+      @if (userProfile(); as userProfile) {
+        @if (dailyQuotes(); as dailyQuotes) {
+          <app-image-export
+            [username]="userProfile.displayName"
+            [range]="selectedRange()"
+            [activity]="selectedActivity()"
+            [quote]="dailyQuotes.quotes[0]"
+          />
+        } @else {
+          <app-image-export
+            [username]="userProfile.displayName"
+            [range]="selectedRange()"
+            [activity]="selectedActivity()"
+            [quote]="null"
+          />
+        }
+      }
     </section>
   </main>
 </div>

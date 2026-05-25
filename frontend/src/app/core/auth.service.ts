@@ -24,7 +24,6 @@ export class AuthService {
 
   private readonly API_BASE = `${environment.apiBaseUrl}/auth`;
   private readonly TOKEN_KEY = 'strava_token';
-  private readonly PREVIEW_KEY = 'stravaxport_dashboard_preview';
 
   readonly isAuthenticated = signal(false);
   readonly isConnecting = signal(false);
@@ -52,7 +51,7 @@ export class AuthService {
 
       this.statusMessage.set('The backend did not return a Strava login URL.');
     } catch {
-      this.statusMessage.set('Unable to reach the backend. Use Preview dashboard while working on the frontend.');
+      this.statusMessage.set('Unable to reach the backend. Please try again.');
     } finally {
       this.isConnecting.set(false);
     }
@@ -66,7 +65,6 @@ export class AuthService {
 
       if (response?.access_token && this.isBrowser()) {
         localStorage.setItem(this.TOKEN_KEY, JSON.stringify(response));
-        localStorage.removeItem(this.PREVIEW_KEY);
         this.isAuthenticated.set(true);
       }
     } catch {
@@ -74,19 +72,9 @@ export class AuthService {
     }
   }
 
-  enterPreviewDashboard(): void {
-    if (this.isBrowser()) {
-      localStorage.setItem(this.PREVIEW_KEY, 'active');
-    }
-
-    this.isAuthenticated.set(true);
-    this.statusMessage.set('');
-  }
-
   logout(): void {
     if (this.isBrowser()) {
       localStorage.removeItem(this.TOKEN_KEY);
-      localStorage.removeItem(this.PREVIEW_KEY);
     }
 
     this.isAuthenticated.set(false);
@@ -126,14 +114,8 @@ export class AuthService {
       return;
     }
 
-    const previewRequested = new URLSearchParams(window.location.search).get('preview') === 'dashboard';
-    if (previewRequested) {
-      localStorage.setItem(this.PREVIEW_KEY, 'active');
-    }
-
     const hasToken = localStorage.getItem(this.TOKEN_KEY) !== null;
-    const hasPreview = localStorage.getItem(this.PREVIEW_KEY) === 'active';
-    this.isAuthenticated.set(hasToken || hasPreview);
+    this.isAuthenticated.set(hasToken);
   }
 
   private isBrowser(): boolean {

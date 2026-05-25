@@ -1,22 +1,24 @@
 import { isPlatformBrowser, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { ActivitiesComponent } from '../activities/activities.component';
 import { AiInsightsComponent } from '../ai-insights/ai-insights.component';
-import { MOCK_AI_INSIGHTS_RESPONSE } from '../ai-insights/ai-insights.mock-data';
 import { AiInsightsService } from '../ai-insights/ai-insights.service';
 import { AverageStatsComponent } from '../average-stats/average-stats.component';
 import { CalendarComponent, DateRange } from '../calendar/calendar.component';
 import { ImageExportComponent } from '../image-export/image-export.component';
 import { MotivationalQuoteComponent } from '../motivational-quote/motivational-quote.component';
-import { MOCK_DAILY_QUOTES_RESPONSE } from '../motivational-quote/motivational-quote.mock-data';
 import { MotivationalQuoteService } from '../motivational-quote/motivational-quote.service';
 import { OverviewComponent } from '../overview/overview.component';
 import { ProgressGraphComponent } from '../progress-graph/progress-graph.component';
 import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
 import { ActivityToggleComponent } from './activity-toggle.component';
-import { MOCK_DASHBOARD_USER, createMockInitialDateRange } from './dashboard.mock-data';
+import type { DashboardUserProfile } from './dashboard-user.service';
+import { DashboardUserService } from './dashboard-user.service';
 import { firstValueFrom } from 'rxjs';
+import type { AiInsightResponse } from '../ai-insights/ai-insights.model';
+import type { DailyQuotesResponse } from '../motivational-quote/motivational-quote.model';
 
 type DashboardSection =
   | 'dashboard'
@@ -67,15 +69,17 @@ export class DashboardComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly aiInsightsService = inject(AiInsightsService);
   private readonly motivationalQuoteService = inject(MotivationalQuoteService);
+  private readonly dashboardUserService = inject(DashboardUserService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
 
   readonly sidebarItems = SIDEBAR_ITEMS;
-  readonly userProfile = signal(MOCK_DASHBOARD_USER);
+  readonly userProfile = signal<DashboardUserProfile | null>(null);
   readonly activeSection = signal<DashboardSection>('dashboard');
-  readonly selectedRange = signal<DateRange>(createMockInitialDateRange());
+  readonly selectedRange = signal<DateRange>(createInitialDateRange());
   readonly selectedActivity = signal<ProgressActivityType>('all');
-  readonly aiInsights = signal(MOCK_AI_INSIGHTS_RESPONSE);
-  readonly dailyQuotes = signal(MOCK_DAILY_QUOTES_RESPONSE);
+  readonly aiInsights = signal<AiInsightResponse | null>(null);
+  readonly dailyQuotes = signal<DailyQuotesResponse | null>(null);
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) {
@@ -84,6 +88,7 @@ export class DashboardComponent implements OnInit {
 
     const section = sectionFromHash(window.location.hash);
     this.activeSection.set(section);
+    void this.loadUserProfile();
     void this.loadDailyQuotes();
     void this.loadAiInsights();
   }
@@ -129,8 +134,12 @@ export class DashboardComponent implements OnInit {
   }
 
   private async loadDailyQuotes(): Promise<void> {
-    const response = await firstValueFrom(this.motivationalQuoteService.getDailyQuotes());
-    this.dailyQuotes.set(response);
+    try {
+      const response = await firstValueFrom(this.motivationalQuoteService.getDailyQuotes());
+      this.dailyQuotes.set(response);
+    } catch {
+      this.handleAuthError();
+    }
   }
 
   private async loadAiInsights(): Promise<void> {
@@ -138,8 +147,22 @@ export class DashboardComponent implements OnInit {
       const response = await firstValueFrom(this.aiInsightsService.getInsights());
       this.aiInsights.set(response);
     } catch {
-      this.aiInsights.set(MOCK_AI_INSIGHTS_RESPONSE);
+      this.handleAuthError();
     }
+  }
+
+  private async loadUserProfile(): Promise<void> {
+    try {
+      const profile = await firstValueFrom(this.dashboardUserService.getUserProfile());
+      this.userProfile.set(profile);
+    } catch {
+      this.handleAuthError();
+    }
+  }
+
+  private handleAuthError(): void {
+    this.authService.logout();
+    void this.router.navigateByUrl('/auth-wall');
   }
 
   private activityThemeValue(key: keyof ActivityTheme): string | null {
@@ -188,6 +211,14 @@ function startOfDay(date: Date): Date {
   next.setHours(0, 0, 0, 0);
 
   return next;
+}
+
+function createInitialDateRange(): DateRange {
+  const end = startOfDay(new Date());
+  const start = new Date(end);
+  start.setDate(end.getDate() - 29);
+
+  return { start, end };
 }
 
 function sectionFromHash(hash: string): DashboardSection {

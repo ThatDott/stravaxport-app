@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../core/auth.service';
 import type { DateRange } from '../calendar/calendar.component';
 import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
 import { AverageDistanceComponent } from './average-distance/average-distance.component';
@@ -25,6 +27,8 @@ const EMPTY_AVERAGE_STATS: AverageStats = {
 })
 export class AverageStatsComponent {
   private readonly averageStatsService = inject(AverageStatsService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   readonly range = input.required<DateRange>();
   readonly activity = input.required<ProgressActivityType>();
@@ -47,12 +51,21 @@ export class AverageStatsComponent {
     const currentRequestId = this.requestId + 1;
     this.requestId = currentRequestId;
 
-    const stats = await firstValueFrom(this.averageStatsService.getAverageStats(range, activity));
-
-    if (currentRequestId !== this.requestId) {
-      return;
+    try {
+      const stats = await firstValueFrom(this.averageStatsService.getAverageStats(range, activity));
+      if (currentRequestId !== this.requestId) {
+        return;
+      }
+      this.stats.set(stats);
+    } catch {
+      if (currentRequestId === this.requestId) {
+        this.handleAuthError();
+      }
     }
+  }
 
-    this.stats.set(stats);
+  private handleAuthError(): void {
+    this.authService.logout();
+    void this.router.navigateByUrl('/auth-wall');
   }
 }

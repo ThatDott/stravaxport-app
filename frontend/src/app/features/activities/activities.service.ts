@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, map, throwError } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
 import type { DateRange } from '../calendar/calendar.component';
@@ -32,7 +32,7 @@ export class ActivitiesService {
     const token = this.authService.getToken();
 
     if (!token) {
-      return of(groupActivities(filterActivities(filterActivitiesByRange(createMockActivities(range), range), activityType)));
+      return throwError(() => new Error('User is not authenticated.'));
     }
 
     const params = new HttpParams()
@@ -50,7 +50,6 @@ export class ActivitiesService {
         map((activities) => activities.map(toActivityItem).filter((activity) => activity !== null)),
         map((activities) => filterActivitiesByRange(activities, range)),
         map((activities) => groupActivities(filterActivities(activities, activityType))),
-        catchError(() => of(groupActivities(filterActivities(filterActivitiesByRange(createMockActivities(range), range), activityType)))),
       );
   }
 }
@@ -135,108 +134,6 @@ function groupActivities(activities: readonly ActivityItem[]): readonly Activity
     key,
     label: formatGroupDate(items[0]?.date ?? new Date(key)),
     activities: items,
-  }));
-}
-
-function createMockActivities(range: DateRange): readonly ActivityItem[] {
-  const end = startOfDay(range.end);
-  const dates = [0, 1, 2, 3, 5, 7, 9, 10, 12].map((offset) => addDays(end, -offset));
-  const seed: Array<Omit<ActivityItem, 'date'>> = [
-    {
-      id: 'walk-1',
-      name: 'Morning Walk',
-      activityType: 'walk',
-      distanceKm: 5.2,
-      movingTimeSeconds: 32 * 60,
-      paceLabel: '6:09/km',
-      speedLabel: '9.8 km/h',
-      elevationM: 42,
-    },
-    {
-      id: 'ride-1',
-      name: 'Sunset Ride',
-      activityType: 'ride',
-      distanceKm: 18.4,
-      movingTimeSeconds: 57 * 60,
-      paceLabel: '-',
-      speedLabel: '19.3 km/h',
-      elevationM: 180,
-    },
-    {
-      id: 'run-1',
-      name: 'Steady Run',
-      activityType: 'run',
-      distanceKm: 6.4,
-      movingTimeSeconds: 38 * 60,
-      paceLabel: '5:56/km',
-      speedLabel: '10.1 km/h',
-      elevationM: 54,
-    },
-    {
-      id: 'walk-2',
-      name: 'Easy Walk',
-      activityType: 'walk',
-      distanceKm: 4.8,
-      movingTimeSeconds: 29 * 60,
-      paceLabel: '6:03/km',
-      speedLabel: '9.9 km/h',
-      elevationM: 28,
-    },
-    {
-      id: 'run-2',
-      name: 'Tempo Run',
-      activityType: 'run',
-      distanceKm: 5.8,
-      movingTimeSeconds: 31 * 60,
-      paceLabel: '5:21/km',
-      speedLabel: '11.2 km/h',
-      elevationM: 46,
-    },
-    {
-      id: 'ride-2',
-      name: 'Tempo Bike',
-      activityType: 'ride',
-      distanceKm: 22.1,
-      movingTimeSeconds: 68 * 60,
-      paceLabel: '-',
-      speedLabel: '19.5 km/h',
-      elevationM: 210,
-    },
-    {
-      id: 'walk-3',
-      name: 'Lunch Walk',
-      activityType: 'walk',
-      distanceKm: 3.1,
-      movingTimeSeconds: 24 * 60,
-      paceLabel: '7:44/km',
-      speedLabel: '7.8 km/h',
-      elevationM: 18,
-    },
-    {
-      id: 'run-3',
-      name: 'Recovery Run',
-      activityType: 'run',
-      distanceKm: 4.2,
-      movingTimeSeconds: 27 * 60,
-      paceLabel: '6:26/km',
-      speedLabel: '9.3 km/h',
-      elevationM: 22,
-    },
-    {
-      id: 'ride-3',
-      name: 'Recovery Bike',
-      activityType: 'ride',
-      distanceKm: 12.6,
-      movingTimeSeconds: 45 * 60,
-      paceLabel: '-',
-      speedLabel: '16.8 km/h',
-      elevationM: 95,
-    },
-  ];
-
-  return seed.map((activity, index) => ({
-    ...activity,
-    date: dates[index] ?? end,
   }));
 }
 
