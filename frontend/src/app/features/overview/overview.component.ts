@@ -25,7 +25,7 @@ export interface OverviewMetric {
   trend?: 'up';
 }
 
-export interface OverviewMockData {
+export interface OverviewData {
   activityLabel: string;
   encouragement: string;
   metrics: readonly OverviewMetric[];
@@ -59,7 +59,7 @@ export class OverviewComponent {
   readonly range = input.required<DateRange>();
   readonly activity = input.required<ProgressActivityType>();
 
-  readonly overview = signal<OverviewMockData>({
+  readonly overview = signal<OverviewData>({
     activityLabel: 'All activities',
     encouragement: '',
     metrics: [],
@@ -71,6 +71,8 @@ export class OverviewComponent {
     effect(() => {
       const range = this.range();
       const activity = this.activity();
+
+      this.overview.set(emptyOverview(activity, range));
 
       queueMicrotask(() => {
         void this.loadOverview(range, activity);
@@ -116,7 +118,7 @@ export class OverviewComponent {
   }
 }
 
-function buildOverviewFromSummary(summary: StravaActivitySummary, activity: ProgressActivityType): OverviewMockData {
+function buildOverviewFromSummary(summary: StravaActivitySummary, activity: ProgressActivityType): OverviewData {
   const label = activityLabel(activity);
 
   const metrics: OverviewMetric[] = [
@@ -140,7 +142,7 @@ function buildOverviewFromSummary(summary: StravaActivitySummary, activity: Prog
   };
 }
 
-function emptyOverview(activity: ProgressActivityType, range: DateRange): OverviewMockData {
+function emptyOverview(activity: ProgressActivityType, range: DateRange): OverviewData {
   return {
     activityLabel: activityLabel(activity),
     encouragement: 'No activities found for this date range. Try adjusting the filters.',
