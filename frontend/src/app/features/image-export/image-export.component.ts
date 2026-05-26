@@ -1,11 +1,24 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
-import { AuthService } from '../../core/auth.service';
-import type { DateRange } from '../calendar/calendar.component';
-import type { MotivationalQuote } from '../motivational-quote/motivational-quote.model';
-import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
-import type { ImageExportPayload, ImageExportStatKey, ImageExportStats, ImageExportStyleOptions } from './image-export.model';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from "@angular/core";
+import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
+import { firstValueFrom } from "rxjs";
+import { AuthService } from "../../core/auth.service";
+import type { DateRange } from "../calendar/calendar.component";
+import type { MotivationalQuote } from "../motivational-quote/motivational-quote.model";
+import type { ProgressActivityType } from "../progress-graph/progress-graph.model";
+import type {
+  ImageExportPayload,
+  ImageExportStatKey,
+  ImageExportStats,
+  ImageExportStyleOptions,
+} from "./image-export.model";
 
 interface SummaryResponse {
   total_activities: number;
@@ -52,18 +65,18 @@ interface DrawExportOptions {
 }
 
 const STAT_OPTIONS: readonly StatOption[] = [
-  { key: 'userName', label: 'User Name' },
-  { key: 'distance', label: 'Distance' },
-  { key: 'movingTime', label: 'Moving Time' },
-  { key: 'averagePace', label: 'Average Pace' },
-  { key: 'speed', label: 'Speed' },
-  { key: 'cadence', label: 'Cadence' },
-  { key: 'elevationGain', label: 'Elevation Gain' },
-  { key: 'dateRange', label: 'Date Range' },
-  { key: 'activityType', label: 'Activity Type' },
-  { key: 'motivationalQuote', label: 'Motivational Quote' },
-  { key: 'geographicalData', label: 'Geographical Data' },
-  { key: 'stravaLogo', label: 'Strava Logo' },
+  { key: "userName", label: "User Name" },
+  { key: "distance", label: "Distance" },
+  { key: "movingTime", label: "Moving Time" },
+  { key: "averagePace", label: "Average Pace" },
+  { key: "speed", label: "Speed" },
+  { key: "cadence", label: "Cadence" },
+  { key: "elevationGain", label: "Elevation Gain" },
+  { key: "dateRange", label: "Date Range" },
+  { key: "activityType", label: "Activity Type" },
+  { key: "motivationalQuote", label: "Motivational Quote" },
+  { key: "geographicalData", label: "Geographical Data" },
+  { key: "stravaLogo", label: "Strava Logo" },
 ];
 
 const DEFAULT_STATS: ImageExportStats = {
@@ -90,16 +103,16 @@ const GUILT_TRIPPING_NOTE =
   "Not enough activities yet. Log some miles and check back for your personalised insights!";
 
 @Component({
-  selector: 'app-image-export',
+  selector: "app-image-export",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './image-export.component.html',
-  styleUrl: './image-export.component.css',
+  templateUrl: "./image-export.component.html",
+  styleUrl: "./image-export.component.css",
 })
 export class ImageExportComponent {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly summaryApi = 'http://localhost:8000/api/activities/summary';
-  private readonly insightsApi = 'http://localhost:8000/api/insights';
+  private readonly summaryApi = "http://localhost:8000/api/activities/summary";
+  private readonly insightsApi = "http://localhost:8000/api/insights";
 
   readonly username = input.required<string>();
   readonly range = input.required<DateRange>();
@@ -111,13 +124,13 @@ export class ImageExportComponent {
   readonly styleOptions = signal<ImageExportStyleOptions>({ ...DEFAULT_STYLE_OPTIONS });
   readonly isExporting = signal(false);
   readonly realMetrics = signal<RealExportMetrics>(emptyRealMetrics());
-  readonly geoNote = signal('');
+  readonly geoNote = signal("");
 
   readonly activityTypes = computed(() => getActivityTypes(this.activity()));
-  readonly activityLabel = computed(() => this.activityTypes().join(' | '));
+  readonly activityLabel = computed(() => this.activityTypes().join(" | "));
   readonly dateRangeLabel = computed(() => formatDateRange(this.range()));
   readonly exportPayload = computed<ImageExportPayload>(() => ({
-    username: this.stats().userName ? this.username() : '',
+    username: this.stats().userName ? this.username() : "",
     activityType: this.activity(),
     activityTypes: this.activityTypes(),
     dateRange: {
@@ -126,16 +139,14 @@ export class ImageExportComponent {
     },
     stats: this.stats(),
     style: this.styleOptions(),
-    format: 'png',
+    format: "png",
   }));
 
   readonly previewMetrics = computed(() => buildVisibleMetrics(this.stats(), this.realMetrics()));
 
   readonly hasData = computed(() => this.realMetrics().activityCount > 0);
 
-  readonly displayGeoNote = computed(() =>
-    this.hasData() ? this.geoNote() : GUILT_TRIPPING_NOTE,
-  );
+  readonly displayGeoNote = computed(() => (this.hasData() ? this.geoNote() : GUILT_TRIPPING_NOTE));
 
   constructor() {
     effect(() => {
@@ -177,7 +188,7 @@ export class ImageExportComponent {
 
     try {
       await this.ensureWebFontsReady();
-      const stravaLogo = this.stats().stravaLogo ? await loadImage('/strava-logo.png') : null;
+      const stravaLogo = this.stats().stravaLogo ? await loadImage("/strava-logo.png") : null;
       const metrics = buildVisibleMetrics(this.stats(), this.realMetrics());
       const note = this.displayGeoNote();
       const blob = await renderTransparentExport({
@@ -185,7 +196,7 @@ export class ImageExportComponent {
         displayName: this.username(),
         includeUserName: this.stats().userName,
         rangeLabel: this.dateRangeLabel(),
-        quoteText: this.quote()?.text ?? '',
+        quoteText: this.quote()?.text ?? "",
         stravaLogo,
         metrics,
         geoNote: note,
@@ -206,10 +217,16 @@ export class ImageExportComponent {
     try {
       const after = formatApiDate(range.start);
       const before = formatApiDate(addDays(range.end, 1));
-      const params = new HttpParams().set('after', after).set('before', before).set('activity_type', activity);
+      const params = new HttpParams()
+        .set("after", after)
+        .set("before", before)
+        .set("activity_type", activity);
 
       const summary = await firstValueFrom(
-        this.http.get<SummaryResponse>(this.summaryApi, { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }), params }),
+        this.http.get<SummaryResponse>(this.summaryApi, {
+          headers: new HttpHeaders({ Authorization: `Bearer ${token}` }),
+          params,
+        }),
       );
 
       this.realMetrics.set({
@@ -229,20 +246,20 @@ export class ImageExportComponent {
             const response = await firstValueFrom(
               this.http.get<InsightApiResponse>(this.insightsApi, {
                 headers: new HttpHeaders({ Authorization: `Bearer ${token}` }),
-                params: new HttpParams().set('strava_id', stravaId),
+                params: new HttpParams().set("strava_id", stravaId),
               }),
             );
             this.geoNote.set(response.geo_comparison);
           } catch {
-            this.geoNote.set('');
+            this.geoNote.set("");
           }
         }
       } else {
-        this.geoNote.set('');
+        this.geoNote.set("");
       }
     } catch {
       this.realMetrics.set(emptyRealMetrics());
-      this.geoNote.set('');
+      this.geoNote.set("");
     }
   }
 
@@ -260,58 +277,61 @@ export class ImageExportComponent {
 function emptyRealMetrics(): RealExportMetrics {
   return {
     distanceKm: 0,
-    movingTimeFormatted: '0h 0m',
-    avgPaceFormatted: '-',
+    movingTimeFormatted: "0h 0m",
+    avgPaceFormatted: "-",
     avgSpeedKph: 0,
     totalElevationM: 0,
     activityCount: 0,
   };
 }
 
-function buildVisibleMetrics(stats: ImageExportStats, real: RealExportMetrics): Array<{ label: string; value: string }> {
+function buildVisibleMetrics(
+  stats: ImageExportStats,
+  real: RealExportMetrics,
+): Array<{ label: string; value: string }> {
   const metrics: Array<{ label: string; value: string }> = [];
 
   if (stats.distance) {
-    metrics.push({ label: 'Distance', value: `${real.distanceKm.toFixed(1)} km` });
+    metrics.push({ label: "Distance", value: `${real.distanceKm.toFixed(1)} km` });
   }
   if (stats.movingTime) {
-    metrics.push({ label: 'Moving Time', value: real.movingTimeFormatted });
+    metrics.push({ label: "Moving Time", value: real.movingTimeFormatted });
   }
   if (stats.averagePace) {
-    metrics.push({ label: 'Avg Pace', value: real.avgPaceFormatted });
+    metrics.push({ label: "Avg Pace", value: real.avgPaceFormatted });
   }
   if (stats.speed) {
-    metrics.push({ label: 'Speed', value: `${real.avgSpeedKph.toFixed(1)} km/h` });
+    metrics.push({ label: "Speed", value: `${real.avgSpeedKph.toFixed(1)} km/h` });
   }
   if (stats.cadence && real.avgCadence != null) {
-    metrics.push({ label: 'Cadence', value: `${(real.avgCadence).toFixed(0)} spm` });
+    metrics.push({ label: "Cadence", value: `${real.avgCadence.toFixed(0)} spm` });
   }
   if (stats.elevationGain) {
-    metrics.push({ label: 'Elevation', value: `${Math.round(real.totalElevationM)} m` });
+    metrics.push({ label: "Elevation", value: `${Math.round(real.totalElevationM)} m` });
   }
   return metrics;
 }
 
 function getActivityTypes(activity: ProgressActivityType): readonly string[] {
-  if (activity === 'all') {
-    return ['walking', 'biking', 'running'];
+  if (activity === "all") {
+    return ["walking", "biking", "running"];
   }
 
-  if (activity === 'ride') {
-    return ['biking'];
+  if (activity === "ride") {
+    return ["biking"];
   }
 
-  if (activity === 'run') {
-    return ['running'];
+  if (activity === "run") {
+    return ["running"];
   }
 
-  return ['walking'];
+  return ["walking"];
 }
 
 function formatApiDate(date: Date): string {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -330,20 +350,20 @@ function formatDateRange(range: DateRange): string {
 }
 
 function formatShortDate(date: Date): string {
-  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
 function renderTransparentExport(options: DrawExportOptions): Promise<Blob> {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   const scale = 2;
   const width = 1080;
   const height = 1080;
   canvas.width = width * scale;
   canvas.height = height * scale;
 
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext("2d");
   if (!context) {
-    return Promise.reject(new Error('Canvas is not available.'));
+    return Promise.reject(new Error("Canvas is not available."));
   }
 
   context.scale(scale, scale);
@@ -354,8 +374,8 @@ function renderTransparentExport(options: DrawExportOptions): Promise<Blob> {
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error('Unable to render export image.'))),
-      'image/png',
+      (blob) => (blob ? resolve(blob) : reject(new Error("Unable to render export image."))),
+      "image/png",
     );
   });
 }
@@ -364,21 +384,31 @@ function drawExportCard(
   context: CanvasRenderingContext2D,
   width: number,
   height: number,
-  options: DrawExportOptions
+  options: DrawExportOptions,
 ): void {
-  const { payload, displayName, includeUserName, rangeLabel, quoteText, stravaLogo, metrics, geoNote, centerGeoNote } = options;
+  const {
+    payload,
+    displayName,
+    includeUserName,
+    rangeLabel,
+    quoteText,
+    stravaLogo,
+    metrics,
+    geoNote,
+    centerGeoNote,
+  } = options;
   const stats = payload.stats;
   const style = payload.style;
   const accent = getExportAccent(payload.activityType);
 
-  const darkBg = '#1a1f2e';
+  const darkBg = "#1a1f2e";
 
   let y = 118;
   context.fillStyle = accent.color;
   context.font = '700 22px "Maison Neue"';
-  context.letterSpacing = '8px';
-  context.fillText('STRAVAXPORT', 116, y);
-  context.letterSpacing = '0px';
+  context.letterSpacing = "8px";
+  context.fillText("STRAVAXPORT", 116, y);
+  context.letterSpacing = "0px";
 
   if (stravaLogo) {
     context.drawImage(stravaLogo, width - 214, 94, 98, 31);
@@ -386,22 +416,43 @@ function drawExportCard(
 
   if (includeUserName) {
     y += 62;
-    context.fillStyle = '#f8fafc';
+    context.fillStyle = "#f8fafc";
     context.font = '700 48px "Nib"';
     context.fillText(displayName, 116, y);
   }
 
   if (stats.dateRange) {
     y += 42;
-    context.fillStyle = '#aab3c4';
+    context.fillStyle = "#aab3c4";
     context.font = '400 24px "Maison Neue"';
     context.fillText(rangeLabel, 116, y);
   }
 
-if (stats.activityType) {
+  if (stats.activityType) {
     y += 50;
     context.font = '700 20px "Maison Neue"';
-    drawPill(context, 116, y - 28, Math.max(168, payload.activityTypes.join(' | ').length * 13), 38, darkBg, payload.activityTypes.join(' | '), accent.color);
+    const activityText = payload.activityTypes.join(" | ");
+    const textMetrics = context.measureText(activityText);
+    const textWidth = textMetrics.width;
+    const paddingX = 22;
+    const pillWidth = textWidth + paddingX * 2;
+    const pillHeight = 38;
+    const pillX = 116;
+    const pillY = y - 28;
+
+    drawRoundRect(
+      context,
+      pillX,
+      pillY,
+      pillWidth,
+      pillHeight,
+      pillHeight / 2,
+      "transparent",
+      accent.color,
+    );
+
+    context.fillStyle = accent.color;
+    context.fillText(activityText, pillX + paddingX, pillY + pillHeight / 2 + 7);
   }
 
   y += 76;
@@ -417,28 +468,54 @@ if (stats.activityType) {
     const top = y + row * (cardHeight + gap);
 
     if (!style.plainStats) {
-      drawRoundRect(context, x, top, cardWidth, cardHeight, 22, darkBg, `rgba(${accent.rgb}, 0.34)`);
+      drawRoundRect(
+        context,
+        x,
+        top,
+        cardWidth,
+        cardHeight,
+        22,
+        darkBg,
+        `rgba(${accent.rgb}, 0.34)`,
+      );
     }
 
-    context.fillStyle = '#aab3c4';
+    context.fillStyle = "#aab3c4";
     context.font = `700 ${style.compactStats ? 16 : 20}px "Maison Neue"`;
-    context.fillText(metric.label.toUpperCase(), x + (style.plainStats ? 0 : 28), top + (style.compactStats ? 24 : 42));
-    context.fillStyle = '#f8fafc';
+    context.fillText(
+      metric.label.toUpperCase(),
+      x + (style.plainStats ? 0 : 28),
+      top + (style.compactStats ? 24 : 42),
+    );
+    context.fillStyle = "#f8fafc";
     context.font = `700 ${style.compactStats ? 25 : 34}px "Nib"`;
-    context.fillText(metric.value, x + (style.plainStats ? 0 : 28), top + (style.compactStats ? 58 : 86));
+    context.fillText(
+      metric.value,
+      x + (style.plainStats ? 0 : 28),
+      top + (style.compactStats ? 58 : 86),
+    );
   });
 
   y += Math.ceil(metrics.length / columns) * (cardHeight + gap) + 18;
 
   // --- Geographical note -------------------------------------------------
   if (stats.geographicalData && geoNote) {
-    const geoResult = drawGeoNote(context, accent, geoNote, 116, y, width - 232, centerGeoNote, darkBg);
+    const geoResult = drawGeoNote(
+      context,
+      accent,
+      geoNote,
+      116,
+      y,
+      width - 232,
+      centerGeoNote,
+      darkBg,
+    );
     y = geoResult.newY;
   }
 
   // --- Motivational quote ---
   if (stats.motivationalQuote && quoteText) {
-    context.strokeStyle = 'rgba(255,255,255,0.15)';
+    context.strokeStyle = "rgba(255,255,255,0.15)";
     context.lineWidth = 2;
     context.beginPath();
     context.moveTo(116, y + 20);
@@ -460,17 +537,18 @@ function drawGeoNote(
   startY: number,
   maxWidth: number,
   centerText = false,
-  darkBg: string = '#1a1f2e',
+  darkBg = "#1a1f2e",
 ): { newY: number } {
   const paddingX = 25;
-  const paddingY = 16;
+  const paddingY = 20;
   const lineHeight = 34;
   const fontSize = 20;
   context.font = `600 ${fontSize}px "Maison Neue"`;
 
-  const words = text.split(' ');
+  const words = text.split(" ");
   const lines: string[] = [];
-  let line = '';
+  let line = "";
+
   for (const word of words) {
     const testLine = line ? `${line} ${word}` : word;
     const testWidth = context.measureText(testLine).width;
@@ -486,22 +564,21 @@ function drawGeoNote(
   }
 
   const boxHeight = paddingY * 2 + lines.length * lineHeight;
-  drawRoundRect(context, startX, startY, maxWidth, boxHeight, 18, darkBg, `rgba(${accent.rgb}, 0.46)`);
+  drawRoundRect(
+    context,
+    startX,
+    startY,
+    maxWidth,
+    boxHeight,
+    18,
+    "#1a1f2e",
+    `rgba(${accent.rgb}, 0.34)`,
+  );
 
-  context.fillStyle = '#f8fafc';
-
+  context.fillStyle = "#f8fafc";
   for (let i = 0; i < lines.length; i++) {
-    if (centerText) {
-      context.textAlign = 'center';
-      context.fillText(lines[i], startX + maxWidth / 2, startY + paddingY + (i + 1) * lineHeight);
-    } else {
-      context.fillText(lines[i], startX + paddingX, startY + paddingY + (i + 1) * lineHeight);
-    }
-  }
-
-  // Reset alignment
-  if (centerText) {
-    context.textAlign = 'left';
+    const textY = startY + paddingY + (i + 0.5) * lineHeight;
+    context.fillText(lines[i], startX + paddingX, textY);
   }
 
   return { newY: startY + boxHeight + 20 };
@@ -517,11 +594,11 @@ function drawWrappedQuote(
   const lineHeight = 40;
   const fontSize = 28;
   context.font = `italic 28px "Nib"`;
-  context.fillStyle = '#f8fafc';
+  context.fillStyle = "#f8fafc";
 
-  const words = text.split(' ');
+  const words = text.split(" ");
   const lines: string[] = [];
-  let line = '';
+  let line = "";
   for (const word of words) {
     const testLine = line ? `${line} ${word}` : word;
     const testWidth = context.measureText(testLine).width;
@@ -544,15 +621,15 @@ function drawWrappedQuote(
 }
 
 function getExportAccent(activity: ProgressActivityType): { color: string; rgb: string } {
-  if (activity === 'ride') {
-    return { color: '#9B6A99', rgb: '155, 106, 153' };
+  if (activity === "ride") {
+    return { color: "#9B6A99", rgb: "155, 106, 153" };
   }
 
-  if (activity === 'run') {
-    return { color: '#1F6F5F', rgb: '31, 111, 95' };
+  if (activity === "run") {
+    return { color: "#1F6F5F", rgb: "31, 111, 95" };
   }
 
-  return { color: '#19c8f2', rgb: '25, 200, 242' };
+  return { color: "#19c8f2", rgb: "25, 200, 242" };
 }
 
 function drawPill(
@@ -603,7 +680,7 @@ function drawRoundRect(
 
 function downloadBlob(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
+  const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = fileName;
   anchor.click();
