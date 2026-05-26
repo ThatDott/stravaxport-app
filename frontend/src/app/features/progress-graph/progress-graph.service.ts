@@ -15,19 +15,30 @@ interface StravaActivity {
   type?: string;
 }
 
+const EMPTY_PROGRESS: ProgressGraphData = {
+  points: [],
+  summary: {
+    totalActivities: 0,
+    totalDistanceKm: 0,
+    totalMovingTimeSeconds: 0,
+    totalElevationM: 0,
+    rangeLabel: '',
+  },
+};
+
 @Injectable({
   providedIn: 'root',
 })
 export class ProgressGraphService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly apiUrl = 'http://localhost:8000/api/v1/activities';
+  private readonly apiUrl = 'http://localhost:8000/api/activities';
 
   getProgress(range: DateRange, activityType: ProgressActivityType): Observable<ProgressGraphData> {
     const token = this.authService.getToken();
 
     if (!token) {
-      return of(createMockProgress(range, activityType));
+      return of(EMPTY_PROGRESS);
     }
 
     const params = new HttpParams()
@@ -43,7 +54,7 @@ export class ProgressGraphService {
       })
       .pipe(
         map((activities) => buildProgressData(range, activities, activityType)),
-        catchError(() => of(createMockProgress(range, activityType))),
+        catchError(() => of(EMPTY_PROGRESS)),
       );
   }
 }
@@ -93,43 +104,6 @@ function buildProgressData(
       totalDistanceKm: roundOne(filtered.reduce((total, activity) => total + (activity.distance ?? 0) / 1000, 0)),
       totalMovingTimeSeconds: filtered.reduce((total, activity) => total + (activity.moving_time ?? 0), 0),
       totalElevationM: Math.round(filtered.reduce((total, activity) => total + (activity.total_elevation_gain ?? 0), 0)),
-      rangeLabel: formatRange(range.start, range.end),
-    },
-  };
-}
-
-function createMockProgress(range: DateRange, activityType: ProgressActivityType): ProgressGraphData {
-  const buckets = buildBuckets(range);
-  const walkDistances = [4.8, 7.2, 6.4, 10.1, 8.8, 12.0, 13.5, 16.4];
-  const rideDistances = [8.4, 11.6, 9.8, 15.2, 13.5, 18.3, 16.7, 21.1];
-  const runDistances = [3.2, 5.4, 4.7, 6.1, 5.8, 7.2, 6.6, 8.4];
-  const distancesByActivity: Record<ProgressActivityType, readonly number[]> = {
-    all: walkDistances.map((distance, index) => distance + (rideDistances[index] ?? 0) + (runDistances[index] ?? 0)),
-    walk: walkDistances,
-    ride: rideDistances,
-    run: runDistances,
-  };
-  const distances = distancesByActivity[activityType];
-  const points: ProgressPoint[] = buckets.map((bucket, index) => ({
-    label: bucket.label,
-    rangeLabel: formatRange(bucket.start, bucket.end),
-    distanceKm: roundOne(distances[index % distances.length] ?? 0),
-    walkDistanceKm:
-      activityType === 'ride' || activityType === 'run' ? 0 : roundOne(walkDistances[index % walkDistances.length] ?? 0),
-    rideDistanceKm:
-      activityType === 'walk' || activityType === 'run' ? 0 : roundOne(rideDistances[index % rideDistances.length] ?? 0),
-    runDistanceKm:
-      activityType === 'walk' || activityType === 'ride' ? 0 : roundOne(runDistances[index % runDistances.length] ?? 0),
-  }));
-  const totalDistanceKm = roundOne(points.reduce((total, point) => total + getPointDistance(point, activityType), 0));
-
-  return {
-    points,
-    summary: {
-      totalActivities: Math.max(1, points.length * (activityType === 'all' ? 3 : 1)),
-      totalDistanceKm,
-      totalMovingTimeSeconds: Math.round(totalDistanceKm * (activityType === 'ride' ? 190 : activityType === 'run' ? 360 : 720)),
-      totalElevationM: Math.round(totalDistanceKm * (activityType === 'ride' ? 5.2 : activityType === 'run' ? 3.8 : 2.4)),
       rangeLabel: formatRange(range.start, range.end),
     },
   };

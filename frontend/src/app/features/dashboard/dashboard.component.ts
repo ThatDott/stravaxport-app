@@ -1,9 +1,11 @@
 import { isPlatformBrowser, NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { ActivitiesComponent } from '../activities/activities.component';
 import { AiInsightsComponent } from '../ai-insights/ai-insights.component';
-import { MOCK_AI_INSIGHTS_RESPONSE } from '../ai-insights/ai-insights.mock-data';
+import { AiInsightResponse } from '../ai-insights/ai-insights.model';
 import { AverageStatsComponent } from '../average-stats/average-stats.component';
 import { CalendarComponent, DateRange } from '../calendar/calendar.component';
 import { ImageExportComponent } from '../image-export/image-export.component';
@@ -14,8 +16,7 @@ import { OverviewComponent } from '../overview/overview.component';
 import { ProgressGraphComponent } from '../progress-graph/progress-graph.component';
 import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
 import { ActivityToggleComponent } from './activity-toggle.component';
-import { MOCK_DASHBOARD_USER, createMockInitialDateRange } from './dashboard.mock-data';
-import { firstValueFrom } from 'rxjs';
+import { createMockInitialDateRange } from './dashboard.mock-data';
 
 type DashboardSection =
   | 'dashboard'
@@ -66,14 +67,25 @@ export class DashboardComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly motivationalQuoteService = inject(MotivationalQuoteService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly http = inject(HttpClient);
 
   readonly sidebarItems = SIDEBAR_ITEMS;
-  readonly userProfile = signal(MOCK_DASHBOARD_USER);
   readonly activeSection = signal<DashboardSection>('dashboard');
   readonly selectedRange = signal<DateRange>(createMockInitialDateRange());
   readonly selectedActivity = signal<ProgressActivityType>('all');
-  readonly aiInsights = signal(MOCK_AI_INSIGHTS_RESPONSE);
+  readonly aiInsights = signal<AiInsightResponse>({
+    generated_at: '',
+    period_compared: '',
+    insights: [],
+  });
   readonly dailyQuotes = signal(MOCK_DAILY_QUOTES_RESPONSE);
+
+  readonly userProfile = computed(() => ({
+    displayName: this.authService.userName() || '<your name>',
+    avatarUrl: this.authService.userAvatar() || '/user-icon.jpg',
+    dailyStatus: "You haven't run today.",
+    connectionLabel: this.authService.isAuthenticated() ? 'Connected' : 'Not connected',
+  }));
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) {
@@ -82,7 +94,13 @@ export class DashboardComponent implements OnInit {
 
     const section = sectionFromHash(window.location.hash);
     this.activeSection.set(section);
+
+    if (this.authService.isAuthenticated()) {
+      void this.authService.fetchProfile();
+    }
+
     void this.loadDailyQuotes();
+    void this.loadAiInsights();
   }
 
   updateDateRange(range: DateRange): void {
@@ -128,6 +146,26 @@ export class DashboardComponent implements OnInit {
   private async loadDailyQuotes(): Promise<void> {
     const response = await firstValueFrom(this.motivationalQuoteService.getDailyQuotes());
     this.dailyQuotes.set(response);
+  }
+
+  private async loadAiInsights(): Promise<void> {
+    const token = this.authService.getToken();
+    const stravaId = this.authService.getStravaId();
+    if (!token || !stravaId) {
+      return;
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.http.get<AiInsightResponse>('http://localhost:8000/api/insights/', {
+          headers: new HttpHeaders({ Authorization: `Bearer ${token}` }),
+          params: new HttpParams().set('strava_id', stravaId),
+        }),
+      );
+      this.aiInsights.set(response);
+    } catch {
+      // keep default empty
+    }
   }
 
   private activityThemeValue(key: keyof ActivityTheme): string | null {

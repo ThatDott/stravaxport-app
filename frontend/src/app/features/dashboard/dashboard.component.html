@@ -9,7 +9,7 @@
   [style.--card]="themeCard()"
   [style.--ring]="themeRing()"
 >
-  <aside class="sidebar" aria-label="Primary navigation">
+  <aside class="sidebar" style="display: flex; flex-direction: column;" aria-label="Primary navigation">
     <a
       class="brand"
       href="#dashboard-home"
@@ -103,6 +103,20 @@
         </a>
       }
     </nav>
+
+    <button
+      class="nav-link logout-link"
+      style="margin-top: auto;"
+      (click)="logout()"
+      aria-label="Logout"
+    >
+      <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <polyline points="16 17 21 12 16 7" />
+        <line x1="21" y1="12" x2="9" y2="12" />
+      </svg>
+      <span>Logout</span>
+    </button>
   </aside>
 
   <main class="dashboard-main" id="dashboard-home">
@@ -122,7 +136,7 @@
           <span class="status-dot" aria-hidden="true"></span>
           {{ userProfile().connectionLabel }}
         </span>
-        <button class="avatar-button" type="button" aria-label="Leave dashboard preview" (click)="logout()">
+        <div class="avatar-button">
           <img
             [ngSrc]="userProfile().avatarUrl"
             width="54"
@@ -130,7 +144,7 @@
             alt=""
             priority
           />
-        </button>
+        </div>
       </div>
     </header>
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Query, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,15 +6,8 @@ from app.db.database import get_db
 from app.db import crud
 from app.services.auth_service import AuthService
 from app.schemas.auth import StravaAuthURL, StravaToken
-from app.db.database import get_db
-from app.db import crud
 from app.schemas.user import UserCreate
-from datetime import datetime
-
-# WARNING: The following import is for development/testing purposes only. Do NOT include in production.
-from datetime import datetime, timedelta
-import jwt
-from app.core.config import settings
+from app.core.auth import get_current_user
 
 router = APIRouter()
 
@@ -62,16 +55,18 @@ async def strava_callback(
     
     return tokens
 
-#WARNING: This endpoint is for development/testing purposes only. Do NOT include in production.
-@router.get("/dev/token", summary="[DEV ONLY] Generate test JWT")
-def get_dev_token():
-    """
-    DELETE THIS IN PRODUCTION
-    Generates a valid JWT for testing without Strava login.
-    """
-    payload = {
-        "sub": "dev_test_user",
-        "exp": datetime.utcnow() + timedelta(days=1)
+
+@router.get("/me")
+async def get_my_profile(
+    strava_id: str = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Returns the logged‑in athlete's name and avatar from Strava."""
+    user = await crud.get_user(db, strava_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    athlete = await AuthService.get_strava_user_info(user.access_token)
+    return {
+        "name": f"{athlete.get('firstname', '')} {athlete.get('lastname', '')}".strip(),
+        "avatar": athlete.get("profile_medium", "")
     }
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    return {"access_token": token, "token_type": "bearer"}
