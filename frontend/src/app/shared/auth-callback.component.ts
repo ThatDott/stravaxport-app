@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../core/auth.service';
 
 @Component({
@@ -73,23 +72,33 @@ import { AuthService } from '../core/auth.service';
   `],
 })
 export class AuthCallbackComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
 
   readonly statusMessage = signal('Completing authorization...');
 
   async ngOnInit(): Promise<void> {
-    const code = this.route.snapshot.queryParamMap.get('code');
+    const code = new URLSearchParams(window.location.search).get('code');
 
-    if (code) {
-      await this.authService.handleCallback(code);
-    } else {
+    if (!code) {
       this.statusMessage.set('No Strava authorization code was returned.');
+      window.setTimeout(() => {
+        window.location.replace('/');
+      }, 800);
+
+      return;
+    }
+
+    await this.authService.handleCallback(code);
+
+    if (this.authService.isAuthenticated()) {
+      await this.authService.fetchProfile();
+      this.statusMessage.set('Authorization successful. Redirecting...');
+    } else {
+      this.statusMessage.set(this.authService.statusMessage());
     }
 
     window.setTimeout(() => {
-      void this.router.navigate(['/']);
+      window.location.replace('/');
     }, 500);
   }
 }

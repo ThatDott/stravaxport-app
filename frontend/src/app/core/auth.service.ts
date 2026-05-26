@@ -7,10 +7,16 @@ interface StravaToken {
   access_token: string;
   refresh_token?: string;
   expires_at?: number;
+  strava_id?: string;
 }
 
 interface StravaAuthUrl {
   url: string;
+}
+
+interface StravaProfile {
+  name: string;
+  avatar: string;
 }
 
 @Injectable({
@@ -20,16 +26,22 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
 
-  private readonly API_BASE = 'http://localhost:8000/api/v1/auth';
+  private readonly API_BASE = 'http://localhost:8000/api/auth';
   private readonly TOKEN_KEY = 'strava_token';
-  private readonly PREVIEW_KEY = 'stravaxport_dashboard_preview';
 
   readonly isAuthenticated = signal(false);
   readonly isConnecting = signal(false);
   readonly statusMessage = signal('');
 
+  readonly userName = signal('');
+  readonly userAvatar = signal('');
+
   constructor() {
     this.checkAuthStatus();
+
+    if (this.isAuthenticated()) {
+      void this.fetchProfile();
+    }
   }
 
   async loginWithStrava(): Promise<void> {
@@ -64,7 +76,6 @@ export class AuthService {
 
       if (response?.access_token && this.isBrowser()) {
         localStorage.setItem(this.TOKEN_KEY, JSON.stringify(response));
-        localStorage.removeItem(this.PREVIEW_KEY);
         this.isAuthenticated.set(true);
       }
     } catch {
@@ -72,23 +83,35 @@ export class AuthService {
     }
   }
 
-  enterPreviewDashboard(): void {
-    if (this.isBrowser()) {
-      localStorage.setItem(this.PREVIEW_KEY, 'active');
+  async fetchProfile(): Promise<void> {
+    const token = this.getToken();
+    if (!token) {
+      return;
     }
 
-    this.isAuthenticated.set(true);
-    this.statusMessage.set('');
+    try {
+      const profile = await firstValueFrom(
+        this.http.get<StravaProfile>(`${this.API_BASE}/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      );
+
+      this.userName.set(profile.name);
+      this.userAvatar.set(profile.avatar);
+    } catch {
+      // ignore – the dashboard will show fallback values.
+    }
   }
 
   logout(): void {
     if (this.isBrowser()) {
       localStorage.removeItem(this.TOKEN_KEY);
-      localStorage.removeItem(this.PREVIEW_KEY);
     }
 
     this.isAuthenticated.set(false);
     this.statusMessage.set('');
+    this.userName.set('');
+    this.userAvatar.set('');
   }
 
   getToken(): string | null {
@@ -110,19 +133,35 @@ export class AuthService {
     }
   }
 
+  getStravaId(): string | null {
+    if (!this.isBrowser()) {
+      return null;
+    }
+
+    const tokenData = localStorage.getItem(this.TOKEN_KEY);
+    if (!tokenData) {
+      return null;
+    }
+
+    try {
+      const parsed: unknown = JSON.parse(tokenData);
+      if (typeof parsed === 'object' && parsed !== null) {
+        const token = parsed as Record<string, unknown>;
+        return typeof token['strava_id'] === 'string' ? token['strava_id'] : null;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
   private checkAuthStatus(): void {
     if (!this.isBrowser()) {
       return;
     }
 
-    const previewRequested = new URLSearchParams(window.location.search).get('preview') === 'dashboard';
-    if (previewRequested) {
-      localStorage.setItem(this.PREVIEW_KEY, 'active');
-    }
-
     const hasToken = localStorage.getItem(this.TOKEN_KEY) !== null;
-    const hasPreview = localStorage.getItem(this.PREVIEW_KEY) === 'active';
-    this.isAuthenticated.set(hasToken || hasPreview);
+    this.isAuthenticated.set(hasToken);
   }
 
   private isBrowser(): boolean {

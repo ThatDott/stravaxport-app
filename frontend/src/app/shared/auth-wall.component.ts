@@ -9,7 +9,7 @@ import { AuthService } from '../core/auth.service';
       <section class="auth-panel">
         <p class="eyebrow">StravaXport</p>
         <h1 id="auth-title">Connect your Strava account</h1>
-        <p class="intro">Use Strava when the backend is running, or preview the dashboard while building the frontend.</p>
+        <p class="intro">Sync your activities and share your progress.</p>
 
         <button
           class="primary-action"
@@ -25,10 +25,6 @@ import { AuthService } from '../core/auth.service';
           } @else {
             Connect to Strava
           }
-        </button>
-
-        <button class="secondary-action" type="button" (click)="previewDashboard()">
-          Preview dashboard
         </button>
 
         @if (authService.statusMessage()) {
@@ -92,30 +88,25 @@ import { AuthService } from '../core/auth.service';
       margin-top: 1rem;
     }
 
-    .primary-action,
-    .secondary-action {
+    .primary-action {
       align-items: center;
+      background: var(--accent);
+      border: 1px solid var(--accent);
       border-radius: 999px;
+      color: var(--accent-foreground);
       cursor: pointer;
       display: inline-flex;
       font-weight: 750;
       gap: 0.6rem;
       justify-content: center;
+      margin-top: 1.6rem;
       min-height: 3rem;
       padding: 0.75rem 1.1rem;
       transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
       width: 100%;
     }
 
-    .primary-action {
-      background: var(--accent);
-      border: 1px solid var(--accent);
-      color: var(--accent-foreground);
-      margin-top: 1.6rem;
-    }
-
-    .primary-action:hover:not(:disabled),
-    .secondary-action:hover {
+    .primary-action:hover:not(:disabled) {
       transform: translateY(-1px);
     }
 
@@ -129,20 +120,7 @@ import { AuthService } from '../core/auth.service';
       width: 1.2rem;
     }
 
-    .secondary-action {
-      background: transparent;
-      border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-      color: var(--foreground);
-      margin-top: 0.75rem;
-    }
-
-    .secondary-action:hover {
-      border-color: color-mix(in srgb, var(--accent) 60%, transparent);
-      color: var(--accent);
-    }
-
-    .primary-action:focus-visible,
-    .secondary-action:focus-visible {
+    .primary-action:focus-visible {
       outline: 3px solid var(--ring);
       outline-offset: 3px;
     }
@@ -153,9 +131,5 @@ export class AuthWallComponent {
 
   connectToStrava(): void {
     void this.authService.loginWithStrava();
-  }
-
-  previewDashboard(): void {
-    this.authService.enterPreviewDashboard();
   }
 }
