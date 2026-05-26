@@ -10,13 +10,12 @@ import { AverageStatsComponent } from '../average-stats/average-stats.component'
 import { CalendarComponent, DateRange } from '../calendar/calendar.component';
 import { ImageExportComponent } from '../image-export/image-export.component';
 import { MotivationalQuoteComponent } from '../motivational-quote/motivational-quote.component';
-import { MOCK_DAILY_QUOTES_RESPONSE } from '../motivational-quote/motivational-quote.mock-data';
+import type { DailyQuotesResponse } from '../motivational-quote/motivational-quote.model';
 import { MotivationalQuoteService } from '../motivational-quote/motivational-quote.service';
 import { OverviewComponent } from '../overview/overview.component';
 import { ProgressGraphComponent } from '../progress-graph/progress-graph.component';
 import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
 import { ActivityToggleComponent } from './activity-toggle.component';
-import { createMockInitialDateRange } from './dashboard.mock-data';
 
 type DashboardSection =
   | 'dashboard'
@@ -71,14 +70,14 @@ export class DashboardComponent implements OnInit {
 
   readonly sidebarItems = SIDEBAR_ITEMS;
   readonly activeSection = signal<DashboardSection>('dashboard');
-  readonly selectedRange = signal<DateRange>(createMockInitialDateRange());
+  readonly selectedRange = signal<DateRange>(getDefaultDateRange());
   readonly selectedActivity = signal<ProgressActivityType>('all');
   readonly aiInsights = signal<AiInsightResponse>({
     generated_at: '',
     period_compared: '',
     insights: [],
   });
-  readonly dailyQuotes = signal(MOCK_DAILY_QUOTES_RESPONSE);
+  readonly dailyQuotes = signal<DailyQuotesResponse>({ quotes: [], date: new Date().toISOString() });
 
   readonly userProfile = computed(() => ({
     displayName: this.authService.userName() || '<your name>',
@@ -155,6 +154,37 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
+    // ------------------------------
+    // 1. Check if any activities exist for the current range
+    // ------------------------------
+    try {
+      const range = this.selectedRange();
+      const activity = this.selectedActivity();
+
+      const params = new HttpParams()
+        .set('after', formatApiDate(range.start))
+        .set('before', formatApiDate(addDays(range.end, 1)))
+        .set('activity_type', activity);
+
+      const summary = await firstValueFrom(
+        this.http.get<{ total_activities: number }>(
+          `http://localhost:8000/api/activities/summary`,
+          { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }), params },
+        ),
+      );
+
+      if (summary.total_activities === 0) {
+        // No activities for this date range → skip the insights call entirely
+        return;
+      }
+    } catch {
+      // If the summary fetch fails, skip insights to avoid useless errors
+      return;
+    }
+
+    // ------------------------------
+    // 2. There ARE activities → fetch AI insights
+    // ------------------------------
     try {
       const response = await firstValueFrom(
         this.http.get<AiInsightResponse>('http://localhost:8000/api/insights/', {
@@ -202,6 +232,13 @@ const ACTIVITY_THEMES: Partial<Record<ProgressActivityType, ActivityTheme>> = {
   },
 };
 
+function getDefaultDateRange(): DateRange {
+  const end = startOfDay(new Date());
+  const start = startOfDay(new Date(end));
+  start.setDate(start.getDate() - 29);
+  return { start, end };
+}
+
 function normalizeRange(range: DateRange): DateRange {
   const start = startOfDay(range.start);
   const end = startOfDay(range.end);
@@ -213,6 +250,19 @@ function startOfDay(date: Date): Date {
   const next = new Date(date);
   next.setHours(0, 0, 0, 0);
 
+  return next;
+}
+
+function formatApiDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function addDays(date: Date, days: number): Date {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
   return next;
 }
 
