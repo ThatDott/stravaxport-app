@@ -120,40 +120,10 @@
         [class.plain-metric-grid]="isStyleEnabled('plainStats')"
         [class.compact-metric-grid]="isStyleEnabled('compactStats')"
       >
-        @if (isEnabled('distance')) {
+        @for (metric of previewMetrics(); track metric.label) {
           <div class="metric-card">
-            <span>Distance</span>
-            <strong>133.6 km</strong>
-          </div>
-        }
-        @if (isEnabled('movingTime')) {
-          <div class="metric-card">
-            <span>Moving Time</span>
-            <strong>8h 57m</strong>
-          </div>
-        }
-        @if (isEnabled('averagePace')) {
-          <div class="metric-card">
-            <span>Avg Pace</span>
-            <strong>5:46/km</strong>
-          </div>
-        }
-        @if (isEnabled('speed')) {
-          <div class="metric-card">
-            <span>Speed</span>
-            <strong>19.2 km/h</strong>
-          </div>
-        }
-        @if (isEnabled('cadence')) {
-          <div class="metric-card">
-            <span>Cadence</span>
-            <strong>164 spm</strong>
-          </div>
-        }
-        @if (isEnabled('elevationGain')) {
-          <div class="metric-card">
-            <span>Elevation</span>
-            <strong>1256 m</strong>
+            <span>{{ metric.label }}</span>
+            <strong>{{ metric.value }}</strong>
           </div>
         }
       </div>
@@ -162,8 +132,10 @@
         <p class="geo-note">That's <strong>7.2%</strong> the length of the Philippines and <strong>43%</strong> of Mt. Apo's height.</p>
       }
 
-      @if (isEnabled('motivationalQuote') && quote(); as dailyQuote) {
-        <blockquote>{{ dailyQuote.text }}</blockquote>
+      @if (quote(); as dailyQuote) {
+        @if (isEnabled('motivationalQuote')) {
+          <blockquote>{{ dailyQuote.text }}</blockquote>
+        }
       }
 
     </div>

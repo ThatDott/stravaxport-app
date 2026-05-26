@@ -1,8 +1,30 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../core/auth.service';
 import type { DateRange } from '../calendar/calendar.component';
 import type { MotivationalQuote } from '../motivational-quote/motivational-quote.model';
 import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
 import type { ImageExportPayload, ImageExportStatKey, ImageExportStats, ImageExportStyleOptions } from './image-export.model';
+
+interface SummaryResponse {
+  total_activities: number;
+  total_distance_km: number;
+  formatted_moving_time: string;
+  avg_pace_formatted: string;
+  avg_speed_kmh: number;
+  total_elevation_m: number;
+  avg_cadence?: number;
+}
+
+interface RealExportMetrics {
+  distanceKm: number;
+  movingTimeFormatted: string;
+  avgPaceFormatted: string;
+  avgSpeedKph: number;
+  totalElevationM: number;
+  avgCadence?: number;
+}
 
 interface StatOption {
   key: ImageExportStatKey;
@@ -51,6 +73,10 @@ const DEFAULT_STYLE_OPTIONS: ImageExportStyleOptions = {
   styleUrl: './image-export.component.css',
 })
 export class ImageExportComponent {
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly summaryApi = 'http://localhost:8000/api/activities/summary';
+
   readonly username = input.required<string>();
   readonly range = input.required<DateRange>();
   readonly activity = input.required<ProgressActivityType>();
@@ -60,6 +86,7 @@ export class ImageExportComponent {
   readonly stats = signal<ImageExportStats>({ ...DEFAULT_STATS });
   readonly styleOptions = signal<ImageExportStyleOptions>({ ...DEFAULT_STYLE_OPTIONS });
   readonly isExporting = signal(false);
+  readonly realMetrics = signal<RealExportMetrics>(emptyRealMetrics());
 
   readonly activityTypes = computed(() => getActivityTypes(this.activity()));
   readonly activityLabel = computed(() => this.activityTypes().join(' | '));
@@ -76,6 +103,16 @@ export class ImageExportComponent {
     style: this.styleOptions(),
     format: 'png',
   }));
+
+  readonly previewMetrics = computed(() => buildVisibleMetrics(this.stats(), this.realMetrics()));
+
+  constructor() {
+    effect(() => {
+      const range = this.range();
+      const activity = this.activity();
+      queueMicrotask(() => { void this.loadRealMetrics(range, activity); });
+    });
+  }
 
   isEnabled(key: ImageExportStatKey): boolean {
     return this.stats()[key];
@@ -107,6 +144,7 @@ export class ImageExportComponent {
 
     try {
       const stravaLogo = this.stats().stravaLogo ? await loadImage('/strava-logo.png') : null;
+      const metrics = buildVisibleMetrics(this.stats(), this.realMetrics());
       const blob = await renderTransparentExport({
         payload: this.exportPayload(),
         displayName: this.username(),
@@ -114,12 +152,75 @@ export class ImageExportComponent {
         rangeLabel: this.dateRangeLabel(),
         quoteText: this.quote()?.text ?? '',
         stravaLogo,
+        metrics,
       });
       downloadBlob(blob, `${this.username()}-stravaxport.png`);
     } finally {
       this.isExporting.set(false);
     }
   }
+
+  private async loadRealMetrics(range: DateRange, activity: ProgressActivityType): Promise<void> {
+    const token = this.authService.getToken();
+    if (!token) {
+      return;
+    }
+
+    try {
+      const after = formatApiDate(range.start);
+      const before = formatApiDate(addDays(range.end, 1));
+      const params = new HttpParams().set('after', after).set('before', before).set('activity_type', activity);
+
+      const summary = await firstValueFrom(
+        this.http.get<SummaryResponse>(this.summaryApi, { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }), params }),
+      );
+
+      this.realMetrics.set({
+        distanceKm: summary.total_distance_km,
+        movingTimeFormatted: summary.formatted_moving_time,
+        avgPaceFormatted: summary.avg_pace_formatted,
+        avgSpeedKph: summary.avg_speed_kmh,
+        totalElevationM: summary.total_elevation_m,
+        avgCadence: summary.avg_cadence,
+      });
+    } catch {
+      this.realMetrics.set(emptyRealMetrics());
+    }
+  }
+}
+
+function emptyRealMetrics(): RealExportMetrics {
+  return {
+    distanceKm: 0,
+    movingTimeFormatted: '0h 0m',
+    avgPaceFormatted: '-',
+    avgSpeedKph: 0,
+    totalElevationM: 0,
+  };
+}
+
+function buildVisibleMetrics(stats: ImageExportStats, real: RealExportMetrics): Array<{ label: string; value: string }> {
+  const metrics: Array<{ label: string; value: string }> = [];
+
+  if (stats.distance) {
+    metrics.push({ label: 'Distance', value: `${real.distanceKm.toFixed(1)} km` });
+  }
+  if (stats.movingTime) {
+    metrics.push({ label: 'Moving Time', value: real.movingTimeFormatted });
+  }
+  if (stats.averagePace) {
+    metrics.push({ label: 'Avg Pace', value: real.avgPaceFormatted });
+  }
+  if (stats.speed) {
+    metrics.push({ label: 'Speed', value: `${real.avgSpeedKph.toFixed(1)} km/h` });
+  }
+  if (stats.cadence && real.avgCadence != null) {
+    metrics.push({ label: 'Cadence', value: `${(real.avgCadence).toFixed(0)} spm` });
+  }
+  if (stats.elevationGain) {
+    metrics.push({ label: 'Elevation', value: `${Math.round(real.totalElevationM)} m` });
+  }
+  return metrics;
 }
 
 function getActivityTypes(activity: ProgressActivityType): readonly string[] {
@@ -145,6 +246,12 @@ function formatApiDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+function addDays(date: Date, days: number): Date {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
 function formatDateRange(range: DateRange): string {
   if (range.start.toDateString() === range.end.toDateString()) {
     return formatShortDate(range.start);
@@ -157,6 +264,10 @@ function formatShortDate(date: Date): string {
   return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+// -----------------------------------------------
+// Rendering helpers – updated to use dynamic metrics
+// -----------------------------------------------
+
 function renderTransparentExport(options: {
   payload: ImageExportPayload;
   displayName: string;
@@ -164,6 +275,7 @@ function renderTransparentExport(options: {
   rangeLabel: string;
   quoteText: string;
   stravaLogo: HTMLImageElement | null;
+  metrics: Array<{ label: string; value: string }>;
 }): Promise<Blob> {
   const canvas = document.createElement('canvas');
   const scale = 2;
@@ -196,9 +308,10 @@ function drawExportCard(
     rangeLabel: string;
     quoteText: string;
     stravaLogo: HTMLImageElement | null;
+    metrics: Array<{ label: string; value: string }>;
   },
 ): void {
-  const { payload, displayName, includeUserName, rangeLabel, quoteText, stravaLogo } = options;
+  const { payload, displayName, includeUserName, rangeLabel, quoteText, stravaLogo, metrics } = options;
   const stats = payload.stats;
   const style = payload.style;
   const accent = getExportAccent(payload.activityType);
@@ -234,7 +347,6 @@ function drawExportCard(
   }
 
   y += 76;
-  const metrics = buildExportMetrics(stats);
   const cardWidth = style.compactStats ? 390 : 280;
   const cardHeight = style.compactStats ? 78 : 126;
   const gap = style.compactStats ? 18 : 24;
@@ -273,17 +385,6 @@ function drawExportCard(
     context.font = 'italic 28px Georgia';
     context.fillText(quoteText, 116, y);
   }
-}
-
-function buildExportMetrics(stats: ImageExportStats): Array<{ label: string; value: string }> {
-  return [
-    stats.distance ? { label: 'Distance', value: '133.6 km' } : null,
-    stats.movingTime ? { label: 'Moving Time', value: '8h 57m' } : null,
-    stats.averagePace ? { label: 'Avg Pace', value: '5:46/km' } : null,
-    stats.speed ? { label: 'Speed', value: '19.2 km/h' } : null,
-    stats.cadence ? { label: 'Cadence', value: '164 spm' } : null,
-    stats.elevationGain ? { label: 'Elevation', value: '1256 m' } : null,
-  ].filter((metric) => metric !== null);
 }
 
 function getExportAccent(activity: ProgressActivityType): { color: string; rgb: string } {
