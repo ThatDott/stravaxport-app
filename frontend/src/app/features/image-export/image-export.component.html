@@ -128,8 +128,8 @@
         }
       </div>
 
-      @if (isEnabled('geographicalData')) {
-        <p class="geo-note">That's <strong>7.2%</strong> the length of the Philippines and <strong>43%</strong> of Mt. Apo's height.</p>
+      @if (isEnabled('geographicalData') && displayGeoNote()) {
+        <p class="geo-note">{{ displayGeoNote() }}</p>
       }
 
       @if (quote(); as dailyQuote) {

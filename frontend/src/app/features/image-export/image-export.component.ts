@@ -17,6 +17,13 @@ interface SummaryResponse {
   avg_cadence?: number;
 }
 
+interface InsightApiResponse {
+  insights: string[];
+  geo_comparison: string;
+  generated_at: string;
+  from_cache: boolean;
+}
+
 interface RealExportMetrics {
   distanceKm: number;
   movingTimeFormatted: string;
@@ -24,11 +31,24 @@ interface RealExportMetrics {
   avgSpeedKph: number;
   totalElevationM: number;
   avgCadence?: number;
+  activityCount: number;
 }
 
 interface StatOption {
   key: ImageExportStatKey;
   label: string;
+}
+
+interface DrawExportOptions {
+  payload: ImageExportPayload;
+  displayName: string;
+  includeUserName: boolean;
+  rangeLabel: string;
+  quoteText: string;
+  stravaLogo: HTMLImageElement | null;
+  metrics: Array<{ label: string; value: string }>;
+  geoNote: string;
+  centerGeoNote: boolean;
 }
 
 const STAT_OPTIONS: readonly StatOption[] = [
@@ -66,6 +86,9 @@ const DEFAULT_STYLE_OPTIONS: ImageExportStyleOptions = {
   compactStats: false,
 };
 
+const GUILT_TRIPPING_NOTE =
+  "Not enough activities yet. Log some miles and check back for your personalised insights!";
+
 @Component({
   selector: 'app-image-export',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -76,6 +99,7 @@ export class ImageExportComponent {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly summaryApi = 'http://localhost:8000/api/activities/summary';
+  private readonly insightsApi = 'http://localhost:8000/api/insights';
 
   readonly username = input.required<string>();
   readonly range = input.required<DateRange>();
@@ -87,6 +111,7 @@ export class ImageExportComponent {
   readonly styleOptions = signal<ImageExportStyleOptions>({ ...DEFAULT_STYLE_OPTIONS });
   readonly isExporting = signal(false);
   readonly realMetrics = signal<RealExportMetrics>(emptyRealMetrics());
+  readonly geoNote = signal('');
 
   readonly activityTypes = computed(() => getActivityTypes(this.activity()));
   readonly activityLabel = computed(() => this.activityTypes().join(' | '));
@@ -106,11 +131,19 @@ export class ImageExportComponent {
 
   readonly previewMetrics = computed(() => buildVisibleMetrics(this.stats(), this.realMetrics()));
 
+  readonly hasData = computed(() => this.realMetrics().activityCount > 0);
+
+  readonly displayGeoNote = computed(() =>
+    this.hasData() ? this.geoNote() : GUILT_TRIPPING_NOTE,
+  );
+
   constructor() {
     effect(() => {
       const range = this.range();
       const activity = this.activity();
-      queueMicrotask(() => { void this.loadRealMetrics(range, activity); });
+      queueMicrotask(() => {
+        void this.loadRealMetrics(range, activity);
+      });
     });
   }
 
@@ -143,8 +176,10 @@ export class ImageExportComponent {
     this.isExporting.set(true);
 
     try {
+      await this.ensureWebFontsReady();
       const stravaLogo = this.stats().stravaLogo ? await loadImage('/strava-logo.png') : null;
       const metrics = buildVisibleMetrics(this.stats(), this.realMetrics());
+      const note = this.displayGeoNote();
       const blob = await renderTransparentExport({
         payload: this.exportPayload(),
         displayName: this.username(),
@@ -153,6 +188,8 @@ export class ImageExportComponent {
         quoteText: this.quote()?.text ?? '',
         stravaLogo,
         metrics,
+        geoNote: note,
+        centerGeoNote: !this.hasData(),
       });
       downloadBlob(blob, `${this.username()}-stravaxport.png`);
     } finally {
@@ -182,9 +219,40 @@ export class ImageExportComponent {
         avgSpeedKph: summary.avg_speed_kmh,
         totalElevationM: summary.total_elevation_m,
         avgCadence: summary.avg_cadence,
+        activityCount: summary.total_activities,
       });
+
+      if (summary.total_activities > 0) {
+        const stravaId = this.authService.getStravaId();
+        if (stravaId) {
+          try {
+            const response = await firstValueFrom(
+              this.http.get<InsightApiResponse>(this.insightsApi, {
+                headers: new HttpHeaders({ Authorization: `Bearer ${token}` }),
+                params: new HttpParams().set('strava_id', stravaId),
+              }),
+            );
+            this.geoNote.set(response.geo_comparison);
+          } catch {
+            this.geoNote.set('');
+          }
+        }
+      } else {
+        this.geoNote.set('');
+      }
     } catch {
       this.realMetrics.set(emptyRealMetrics());
+      this.geoNote.set('');
+    }
+  }
+
+  private async ensureWebFontsReady(): Promise<void> {
+    try {
+      await document.fonts.load('1rem "Maison Neue"');
+      await document.fonts.load('600 1rem "Maison Neue"');
+      await document.fonts.load('1rem "Nib"');
+    } catch {
+      // continue anyway – the fallback fonts will be used
     }
   }
 }
@@ -196,6 +264,7 @@ function emptyRealMetrics(): RealExportMetrics {
     avgPaceFormatted: '-',
     avgSpeedKph: 0,
     totalElevationM: 0,
+    activityCount: 0,
   };
 }
 
@@ -264,19 +333,7 @@ function formatShortDate(date: Date): string {
   return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// -----------------------------------------------
-// Rendering helpers – updated to use dynamic metrics
-// -----------------------------------------------
-
-function renderTransparentExport(options: {
-  payload: ImageExportPayload;
-  displayName: string;
-  includeUserName: boolean;
-  rangeLabel: string;
-  quoteText: string;
-  stravaLogo: HTMLImageElement | null;
-  metrics: Array<{ label: string; value: string }>;
-}): Promise<Blob> {
+function renderTransparentExport(options: DrawExportOptions): Promise<Blob> {
   const canvas = document.createElement('canvas');
   const scale = 2;
   const width = 1080;
@@ -290,10 +347,16 @@ function renderTransparentExport(options: {
   }
 
   context.scale(scale, scale);
+
+  context.clearRect(0, 0, width, height);
+
   drawExportCard(context, width, height, options);
 
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Unable to render export image.'))), 'image/png');
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('Unable to render export image.'))),
+      'image/png',
+    );
   });
 }
 
@@ -301,24 +364,18 @@ function drawExportCard(
   context: CanvasRenderingContext2D,
   width: number,
   height: number,
-  options: {
-    payload: ImageExportPayload;
-    displayName: string;
-    includeUserName: boolean;
-    rangeLabel: string;
-    quoteText: string;
-    stravaLogo: HTMLImageElement | null;
-    metrics: Array<{ label: string; value: string }>;
-  },
+  options: DrawExportOptions
 ): void {
-  const { payload, displayName, includeUserName, rangeLabel, quoteText, stravaLogo, metrics } = options;
+  const { payload, displayName, includeUserName, rangeLabel, quoteText, stravaLogo, metrics, geoNote, centerGeoNote } = options;
   const stats = payload.stats;
   const style = payload.style;
   const accent = getExportAccent(payload.activityType);
-  let y = 118;
 
+  const darkBg = '#1a1f2e';
+
+  let y = 118;
   context.fillStyle = accent.color;
-  context.font = '700 22px Arial';
+  context.font = '700 22px "Maison Neue"';
   context.letterSpacing = '8px';
   context.fillText('STRAVAXPORT', 116, y);
   context.letterSpacing = '0px';
@@ -330,20 +387,21 @@ function drawExportCard(
   if (includeUserName) {
     y += 62;
     context.fillStyle = '#f8fafc';
-    context.font = '700 48px Georgia';
+    context.font = '700 48px "Nib"';
     context.fillText(displayName, 116, y);
   }
 
   if (stats.dateRange) {
     y += 42;
     context.fillStyle = '#aab3c4';
-    context.font = '400 24px Arial';
+    context.font = '400 24px "Maison Neue"';
     context.fillText(rangeLabel, 116, y);
   }
 
-  if (stats.activityType) {
+if (stats.activityType) {
     y += 50;
-    drawPill(context, 116, y - 28, Math.max(168, payload.activityTypes.join(' | ').length * 13), 38, `rgba(${accent.rgb}, 0.16)`, payload.activityTypes.join(' | '), accent.color);
+    context.font = '700 20px "Maison Neue"';
+    drawPill(context, 116, y - 28, Math.max(168, payload.activityTypes.join(' | ').length * 13), 38, darkBg, payload.activityTypes.join(' | '), accent.color);
   }
 
   y += 76;
@@ -359,32 +417,130 @@ function drawExportCard(
     const top = y + row * (cardHeight + gap);
 
     if (!style.plainStats) {
-      drawRoundRect(context, x, top, cardWidth, cardHeight, 22, 'rgba(255, 255, 255, 0.08)', `rgba(${accent.rgb}, 0.34)`);
+      drawRoundRect(context, x, top, cardWidth, cardHeight, 22, darkBg, `rgba(${accent.rgb}, 0.34)`);
     }
 
     context.fillStyle = '#aab3c4';
-    context.font = `700 ${style.compactStats ? 16 : 20}px Arial`;
+    context.font = `700 ${style.compactStats ? 16 : 20}px "Maison Neue"`;
     context.fillText(metric.label.toUpperCase(), x + (style.plainStats ? 0 : 28), top + (style.compactStats ? 24 : 42));
     context.fillStyle = '#f8fafc';
-    context.font = `700 ${style.compactStats ? 25 : 34}px Georgia`;
+    context.font = `700 ${style.compactStats ? 25 : 34}px "Nib"`;
     context.fillText(metric.value, x + (style.plainStats ? 0 : 28), top + (style.compactStats ? 58 : 86));
   });
 
-  y += Math.ceil(metrics.length / columns) * (cardHeight + gap) + 10;
+  y += Math.ceil(metrics.length / columns) * (cardHeight + gap) + 18;
 
-  if (stats.geographicalData) {
-    drawRoundRect(context, 116, y, width - 232, 70, 18, `rgba(${accent.rgb}, 0.12)`, `rgba(${accent.rgb}, 0.46)`);
-    context.fillStyle = '#f8fafc';
-    context.font = '600 23px Arial';
-    context.fillText("That's 7.2% the length of the Philippines and 43% of Mt. Apo's height.", 142, y + 43);
-    y += 108;
+  // --- Geographical note -------------------------------------------------
+  if (stats.geographicalData && geoNote) {
+    const geoResult = drawGeoNote(context, accent, geoNote, 116, y, width - 232, centerGeoNote, darkBg);
+    y = geoResult.newY;
   }
 
+  // --- Motivational quote ---
   if (stats.motivationalQuote && quoteText) {
-    context.fillStyle = '#f8fafc';
-    context.font = 'italic 28px Georgia';
-    context.fillText(quoteText, 116, y);
+    context.strokeStyle = 'rgba(255,255,255,0.15)';
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(116, y + 20);
+    context.lineTo(width - 116, y + 20);
+    context.stroke();
+
+    y += 80;
+
+    const quoteResult = drawWrappedQuote(context, quoteText, 116, y, width - 232);
+    y = quoteResult.newY;
   }
+}
+
+function drawGeoNote(
+  context: CanvasRenderingContext2D,
+  accent: { color: string; rgb: string },
+  text: string,
+  startX: number,
+  startY: number,
+  maxWidth: number,
+  centerText = false,
+  darkBg: string = '#1a1f2e',
+): { newY: number } {
+  const paddingX = 25;
+  const paddingY = 16;
+  const lineHeight = 34;
+  const fontSize = 20;
+  context.font = `600 ${fontSize}px "Maison Neue"`;
+
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let line = '';
+  for (const word of words) {
+    const testLine = line ? `${line} ${word}` : word;
+    const testWidth = context.measureText(testLine).width;
+    if (testWidth > maxWidth - paddingX * 2 && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = testLine;
+    }
+  }
+  if (line) {
+    lines.push(line);
+  }
+
+  const boxHeight = paddingY * 2 + lines.length * lineHeight;
+  drawRoundRect(context, startX, startY, maxWidth, boxHeight, 18, darkBg, `rgba(${accent.rgb}, 0.46)`);
+
+  context.fillStyle = '#f8fafc';
+
+  for (let i = 0; i < lines.length; i++) {
+    if (centerText) {
+      context.textAlign = 'center';
+      context.fillText(lines[i], startX + maxWidth / 2, startY + paddingY + (i + 1) * lineHeight);
+    } else {
+      context.fillText(lines[i], startX + paddingX, startY + paddingY + (i + 1) * lineHeight);
+    }
+  }
+
+  // Reset alignment
+  if (centerText) {
+    context.textAlign = 'left';
+  }
+
+  return { newY: startY + boxHeight + 20 };
+}
+
+function drawWrappedQuote(
+  context: CanvasRenderingContext2D,
+  text: string,
+  startX: number,
+  startY: number,
+  maxWidth: number,
+): { newY: number } {
+  const lineHeight = 40;
+  const fontSize = 28;
+  context.font = `italic 28px "Nib"`;
+  context.fillStyle = '#f8fafc';
+
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let line = '';
+  for (const word of words) {
+    const testLine = line ? `${line} ${word}` : word;
+    const testWidth = context.measureText(testLine).width;
+    if (testWidth > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = testLine;
+    }
+  }
+  if (line) {
+    lines.push(line);
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    context.fillText(lines[i], startX, startY + i * lineHeight);
+  }
+
+  return { newY: startY + lines.length * lineHeight + 10 };
 }
 
 function getExportAccent(activity: ProgressActivityType): { color: string; rgb: string } {
@@ -411,10 +567,10 @@ function drawPill(
 ): void {
   drawRoundRect(context, x, y, width, height, height / 2, background);
   context.fillStyle = color;
-  context.font = '700 20px Arial';
   context.fillText(text, x + 22, y + height / 2 + 7);
 }
 
+// Helper to load images
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
