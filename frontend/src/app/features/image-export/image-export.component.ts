@@ -404,6 +404,9 @@ function drawExportCard(
   const darkBg = "#1a1f2e";
 
   let y = 118;
+
+  const margin = 116;
+
   context.fillStyle = accent.color;
   context.font = '700 22px "Maison Neue"';
   context.letterSpacing = "8px";
@@ -411,7 +414,13 @@ function drawExportCard(
   context.letterSpacing = "0px";
 
   if (stravaLogo) {
-    context.drawImage(stravaLogo, width - 214, 94, 98, 31);
+    const logoWidth = 128;
+    const logoHeight = Math.ceil((270 / 1280) * logoWidth);
+
+    const logoX = width - margin - logoWidth;
+    const logoY = y - 24;
+
+    context.drawImage(stravaLogo, logoX, logoY, logoWidth, logoHeight);
   }
 
   if (includeUserName) {
@@ -456,15 +465,18 @@ function drawExportCard(
   }
 
   y += 76;
-  const cardWidth = style.compactStats ? 390 : 280;
-  const cardHeight = style.compactStats ? 78 : 126;
+
   const gap = style.compactStats ? 18 : 24;
   const columns = style.compactStats ? 2 : 3;
+  const availableWidth = width - 2 * margin;
+  const totalGaps = (columns - 1) * gap;
+  const cardWidth = Math.floor((availableWidth - totalGaps) / columns);
+  const cardHeight = style.compactStats ? 78 : 126;
 
   metrics.forEach((metric, index) => {
     const column = index % columns;
     const row = Math.floor(index / columns);
-    const x = 116 + column * (cardWidth + gap);
+    const x = margin + column * (cardWidth + gap);
     const top = y + row * (cardHeight + gap);
 
     if (!style.plainStats) {
@@ -487,6 +499,7 @@ function drawExportCard(
       x + (style.plainStats ? 0 : 28),
       top + (style.compactStats ? 24 : 42),
     );
+
     context.fillStyle = "#f8fafc";
     context.font = `700 ${style.compactStats ? 25 : 34}px "Nib"`;
     context.fillText(
@@ -543,7 +556,7 @@ function drawGeoNote(
   const paddingY = 20;
   const lineHeight = 34;
   const fontSize = 20;
-  context.font = `600 ${fontSize}px "Maison Neue"`;
+  context.font = `400 ${fontSize}px "Maison Neue"`;
 
   const words = text.split(" ");
   const lines: string[] = [];
@@ -576,6 +589,7 @@ function drawGeoNote(
   );
 
   context.fillStyle = "#f8fafc";
+  context.textBaseline = "middle";
   for (let i = 0; i < lines.length; i++) {
     const textY = startY + paddingY + (i + 0.5) * lineHeight;
     context.fillText(lines[i], startX + paddingX, textY);
