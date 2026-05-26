@@ -9,13 +9,8 @@
   [style.--card]="themeCard()"
   [style.--ring]="themeRing()"
 >
-  <aside class="sidebar" style="display: flex; flex-direction: column;" aria-label="Primary navigation">
-    <a
-      class="brand"
-      href="#dashboard-home"
-      aria-label="Go to dashboard home"
-      (click)="setActiveSection('dashboard')"
-    >
+  <aside class="sidebar" aria-label="Primary navigation">
+    <div class="brand">
       <span class="brand-mark" aria-hidden="true">
         <img src="/icon.jpg" alt="" />
       </span>
@@ -23,7 +18,7 @@
         <strong>StravaXport</strong>
         <small>The Social Runner</small>
       </span>
-    </a>
+    </div>
 
     <nav class="nav-list" aria-label="Dashboard sections">
       @for (item of sidebarItems; track item.section) {
@@ -106,7 +101,6 @@
 
     <button
       class="nav-link logout-link"
-      style="margin-top: auto;"
       (click)="logout()"
       aria-label="Logout"
     >

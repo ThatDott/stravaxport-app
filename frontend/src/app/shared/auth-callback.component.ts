@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
 import { AuthService } from '../core/auth.service';
 
 @Component({
@@ -73,10 +74,15 @@ import { AuthService } from '../core/auth.service';
 })
 export class AuthCallbackComponent implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly statusMessage = signal('Completing authorization...');
 
   async ngOnInit(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     const code = new URLSearchParams(window.location.search).get('code');
 
     if (!code) {

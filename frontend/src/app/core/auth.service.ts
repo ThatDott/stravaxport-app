@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -98,8 +98,16 @@ export class AuthService {
 
       this.userName.set(profile.name);
       this.userAvatar.set(profile.avatar);
-    } catch {
-      // ignore – the dashboard will show fallback values.
+    } catch (error: unknown) {
+      if (error instanceof HttpErrorResponse && error.status === 401) {
+        if (this.isBrowser()) {
+          localStorage.removeItem(this.TOKEN_KEY);
+        }
+        this.isAuthenticated.set(false);
+        this.userName.set('');
+        this.userAvatar.set('');
+        this.statusMessage.set('Session expired. Please login again.');
+      }
     }
   }
 

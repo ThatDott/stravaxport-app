@@ -154,37 +154,6 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    // ------------------------------
-    // 1. Check if any activities exist for the current range
-    // ------------------------------
-    try {
-      const range = this.selectedRange();
-      const activity = this.selectedActivity();
-
-      const params = new HttpParams()
-        .set('after', formatApiDate(range.start))
-        .set('before', formatApiDate(addDays(range.end, 1)))
-        .set('activity_type', activity);
-
-      const summary = await firstValueFrom(
-        this.http.get<{ total_activities: number }>(
-          `http://localhost:8000/api/activities/summary`,
-          { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }), params },
-        ),
-      );
-
-      if (summary.total_activities === 0) {
-        // No activities for this date range → skip the insights call entirely
-        return;
-      }
-    } catch {
-      // If the summary fetch fails, skip insights to avoid useless errors
-      return;
-    }
-
-    // ------------------------------
-    // 2. There ARE activities → fetch AI insights
-    // ------------------------------
     try {
       const response = await firstValueFrom(
         this.http.get<AiInsightResponse>('http://localhost:8000/api/insights/', {
@@ -250,19 +219,6 @@ function startOfDay(date: Date): Date {
   const next = new Date(date);
   next.setHours(0, 0, 0, 0);
 
-  return next;
-}
-
-function formatApiDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function addDays(date: Date, days: number): Date {
-  const next = new Date(date);
-  next.setDate(next.getDate() + days);
   return next;
 }
 
