@@ -15,7 +15,7 @@ While Strava provides excellent data tracking, its visualization options are oft
 | :--- | :--- |
 | **Frontend** | Angular (TypeScript) |
 | **Backend** | Python (FastAPI) |
-| **Database** | MongoDB (Atlas) |
+| **Database** | PostgreSQL |
 | **Auth** | Strava OAuth 2.0 & JWT |
 | **Deployment** | Vercel / Render |
 
@@ -49,6 +49,37 @@ The project follows **Service-Oriented Architecture (SOA)** principles:
 * **Justin Dominic Veloso**
 
 *Submitted to: Asst. Prof. Vicente B. Calag (CMSC 186)*
+
+## Running the Project
+
+**Prerequisites**
+- Python 3.12
+- Node.js & npm
+- A configured `backend/.env` file with your Strava OAuth credentials, database connection string, and Gemini API credentials
+
+**Spin up the database (Docker)**
+```bash
+docker compose up
+```
+This starts a PostgreSQL 16 instance on port `5432`.
+
+**Backend**
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn main:app --reload
+```
+
+**Frontend**
+```bash
+cd frontend
+npm install
+ng serve
+```
+Then open `http://localhost:4200`.
 
 ## License
 This project is for educational purposes under the CMSC 186 Web Services course.
