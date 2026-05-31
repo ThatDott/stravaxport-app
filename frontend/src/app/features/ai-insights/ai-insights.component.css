@@ -57,8 +57,7 @@ h2 {
 }
 
 .card-header p,
-.range-note,
-.insight-description {
+.range-note {
   color: var(--muted-foreground);
 }
 
@@ -82,28 +81,98 @@ h2 {
   text-transform: uppercase;
 }
 
-.insight-title {
-  color: var(--foreground);
-  font-size: clamp(0.875rem, 1.7vw, 1.18rem);
-  font-weight: 600;
-  line-height: 1.45;
+.insight-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.insight-description,
+.insight-list li {
+  color: var(--foreground);
+  font-size: clamp(0.8rem, 1.5vw, 0.92rem);
+  line-height: 1.55;
+  padding-left: 1.2rem;
+  position: relative;
+}
+
+.insight-list li::before {
+  color: var(--accent);
+  content: "•";
+  font-weight: 700;
+  left: 0;
+  position: absolute;
+}
+
+.insight-geo-note {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 0.4rem 0.4rem 0;
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin-top: 1rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.insight-error {
+  background: color-mix(in srgb, var(--muted-foreground) 12%, transparent);
+  border-radius: 0.6rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.error-text {
+  color: var(--foreground);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.error-hint {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  margin-top: 0.4rem;
+}
+
 .empty-state {
+  color: var(--muted-foreground);
   display: block;
   font-size: 0.8rem;
   line-height: 1.45;
   margin-top: 1rem;
 }
 
-.insight-guidance {
-  color: color-mix(in srgb, var(--foreground) 84%, var(--accent));
-  font-size: 0.82rem;
-  line-height: 1.55;
-  margin-top: 0.9rem;
+.skeleton-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.empty-state {
-  color: var(--muted-foreground);
+.skeleton-line {
+  background: color-mix(in srgb, var(--muted-foreground) 18%, transparent);
+  border-radius: 0.5rem;
+  height: 1rem;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-range {
+  width: 40%;
+  height: 0.7rem;
+}
+
+.skeleton-body {
+  width: 100%;
+}
+
+.skeleton-body.short {
+  width: 55%;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
 }

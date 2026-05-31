@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { DateRange } from '../calendar/calendar.component';
 import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
-import type { AiInsight, AiInsightResponse } from './ai-insights.model';
+import type { AiInsightResponse } from './ai-insights.model';
 
 @Component({
   selector: 'app-ai-insights',
@@ -13,17 +13,15 @@ export class AiInsightsComponent {
   readonly response = input.required<AiInsightResponse>();
   readonly range = input.required<DateRange>();
   readonly activity = input.required<ProgressActivityType>();
+  readonly isLoading = input(false);
 
-  readonly primaryInsight = computed<AiInsight | null>(() => {
-    const activity = this.activity();
-    return (
-      this.response().insights.find((insight) => insight.activity_type === activity) ??
-      this.response().insights.find((insight) => insight.activity_type === 'all') ??
-      this.response().insights[0] ??
-      null
-    );
-  });
-  readonly guidance = computed(() => this.primaryInsight()?.recommendations[0] ?? null);
+  readonly insightList = computed(() => this.response().insights);
+  readonly geoNote = computed(() => this.response().geo_comparison);
+  readonly hasInsights = computed(() => this.insightList().length > 0);
+  readonly isErrorState = computed(() =>
+    this.insightList().length === 1 &&
+    this.insightList()[0].startsWith("We couldn't generate your insights right now."),
+  );
   readonly rangeLabel = computed(() => formatDateRange(this.range()));
 }
 
