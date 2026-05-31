@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.0-flash"
     INSIGHTS_MAX_TOKENS: int = 500
+    INSIGHTS_MAX_ACTIVITIES: int = 50
 
     class Config:
         env_file = ".env"
