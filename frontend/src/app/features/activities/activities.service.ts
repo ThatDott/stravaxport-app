@@ -28,17 +28,28 @@ export class ActivitiesService {
   private readonly apiUrl = 'http://localhost:8000/api/activities';
 
   getActivityGroups(range: DateRange, activityType: ProgressActivityType): Observable<readonly ActivityDateGroup[]> {
+    return this.getActivityPages(range, activityType, 1).pipe(
+      map((result) => groupActivities(filterActivities(result.activities, activityType))),
+    );
+  }
+
+  getActivityPages(
+    range: DateRange,
+    activityType: ProgressActivityType,
+    page: number,
+    perPage = 30,
+  ): Observable<{ activities: readonly ActivityItem[]; hasMore: boolean }> {
     const token = this.authService.getToken();
 
     if (!token) {
-      return of([]);
+      return of({ activities: [], hasMore: false });
     }
 
     const params = new HttpParams()
       .set('after', formatDate(range.start))
       .set('before', formatDate(addDays(range.end, 1)))
-      .set('page', 1)
-      .set('per_page', 200);
+      .set('page', String(page))
+      .set('per_page', String(perPage));
 
     return this.http
       .get<StravaActivity[]>(this.apiUrl, {
@@ -46,10 +57,16 @@ export class ActivitiesService {
         params,
       })
       .pipe(
-        map((activities) => activities.map(toActivityItem).filter((activity) => activity !== null)),
-        map((activities) => filterActivitiesByRange(activities, range)),
-        map((activities) => groupActivities(filterActivities(activities, activityType))),
-        catchError(() => of([])),
+        map((activities) => {
+          const items = activities
+            .map(toActivityItem)
+            .filter((a): a is ActivityItem => a !== null);
+          return {
+            activities: filterActivitiesByRange(items, range),
+            hasMore: activities.length >= perPage,
+          };
+        }),
+        catchError(() => of({ activities: [], hasMore: false })),
       );
   }
 }
@@ -98,7 +115,7 @@ function normalizeActivityType(activity: StravaActivity): ActivityItem['activity
   return null;
 }
 
-function filterActivities(
+export function filterActivities(
   activities: readonly ActivityItem[],
   activityType: ProgressActivityType,
 ): readonly ActivityItem[] {
@@ -119,8 +136,8 @@ function filterActivitiesByRange(activities: readonly ActivityItem[], range: Dat
   });
 }
 
-function groupActivities(activities: readonly ActivityItem[]): readonly ActivityDateGroup[] {
-  const sorted = [...activities].sort((first, second) => first.date.getTime() - second.date.getTime());
+export function groupActivities(activities: readonly ActivityItem[]): readonly ActivityDateGroup[] {
+  const sorted = [...activities].sort((first, second) => second.date.getTime() - first.date.getTime());
   const groups = new Map<string, ActivityItem[]>();
 
   for (const activity of sorted) {
