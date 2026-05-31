@@ -15,11 +15,26 @@
   </header>
 
   <div class="insight-body" aria-live="polite">
-    @if (primaryInsight(); as insight) {
+    @if (isLoading()) {
+      <div class="skeleton-container" aria-label="Loading AI insights">
+        <div class="skeleton-line skeleton-range"></div>
+        <div class="skeleton-line skeleton-body"></div>
+        <div class="skeleton-line skeleton-body short"></div>
+      </div>
+    } @else if (isErrorState()) {
+      <div class="insight-error" role="alert">
+        <p class="error-text">We couldn't generate your insights right now.</p>
+        <p class="error-hint">Try again later or check the Gemini API configuration.</p>
+      </div>
+    } @else if (hasInsights()) {
       <p class="range-note">{{ rangeLabel() }}</p>
-      <p class="insight-title">{{ insight.title }}</p>
-      @if (guidance(); as aiGuide) {
-        <p class="insight-guidance">{{ aiGuide }}</p>
+      <ul class="insight-list">
+        @for (insight of insightList(); track insight) {
+          <li>{{ insight }}</li>
+        }
+      </ul>
+      @if (geoNote(); as geo) {
+        <p class="insight-geo-note">{{ geo }}</p>
       }
     } @else {
       <small class="empty-state">Not enough activities yet. Log some miles and check back for your personalised insights!</small>
