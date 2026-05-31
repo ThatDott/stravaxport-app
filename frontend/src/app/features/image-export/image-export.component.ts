@@ -6,6 +6,7 @@ import {
   inject,
   input,
   signal,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -111,6 +112,7 @@ const GUILT_TRIPPING_NOTE =
 export class ImageExportComponent {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly summaryApi = 'http://localhost:8000/api/activities/summary';
   private readonly insightsApi = 'http://localhost:8000/api/insights/';
 
@@ -164,11 +166,13 @@ export class ImageExportComponent {
 
   toggleStat(key: ImageExportStatKey): void {
     this.stats.update((stats) => ({ ...stats, [key]: !stats[key] }));
+    this.cdr.markForCheck();
   }
 
   resetStats(): void {
     this.stats.set({ ...DEFAULT_STATS });
     this.styleOptions.set({ ...DEFAULT_STYLE_OPTIONS });
+    this.cdr.markForCheck();
   }
 
   isStyleEnabled(key: keyof ImageExportStyleOptions): boolean {
@@ -177,6 +181,7 @@ export class ImageExportComponent {
 
   toggleStyle(key: keyof ImageExportStyleOptions): void {
     this.styleOptions.update((options) => ({ ...options, [key]: !options[key] }));
+    this.cdr.markForCheck();
   }
 
   async exportPng(): Promise<void> {
@@ -217,10 +222,12 @@ export class ImageExportComponent {
     try {
       const after = formatApiDate(range.start);
       const before = formatApiDate(addDays(range.end, 1));
-      const params = new HttpParams()
+      let params = new HttpParams()
         .set('after', after)
-        .set('before', before)
-        .set('activity_type', activity);
+        .set('before', before);
+      if (activity !== 'all') {
+        params = params.set('activity_type', activity);
+      }
 
       const summary = await firstValueFrom(
         this.http.get<SummaryResponse>(this.summaryApi, {
@@ -243,10 +250,17 @@ export class ImageExportComponent {
         const stravaId = this.authService.getStravaId();
         if (stravaId) {
           try {
+            let insightsParams = new HttpParams()
+              .set('strava_id', stravaId)
+              .set('after', after)
+              .set('before', before);
+            if (activity !== 'all') {
+              insightsParams = insightsParams.set('activity_type', activity);
+            }
             const response = await firstValueFrom(
               this.http.get<InsightApiResponse>(this.insightsApi, {
                 headers: new HttpHeaders({ Authorization: `Bearer ${token}` }),
-                params: new HttpParams().set('strava_id', stravaId),
+                params: insightsParams,
               }),
             );
             this.geoNote.set(response.geo_comparison);
