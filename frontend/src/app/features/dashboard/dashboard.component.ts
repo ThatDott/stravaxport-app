@@ -1,6 +1,6 @@
 import { isPlatformBrowser, NgOptimizedImage } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { ActivitiesComponent } from '../activities/activities.component';
@@ -74,9 +74,11 @@ export class DashboardComponent implements OnInit {
   readonly selectedActivity = signal<ProgressActivityType>('all');
   readonly aiInsights = signal<AiInsightResponse>({
     generated_at: '',
-    period_compared: '',
+    geo_comparison: '',
     insights: [],
+    from_cache: false,
   });
+  readonly isAiLoading = signal(false);
   readonly dailyQuotes = signal<DailyQuotesResponse>({ quotes: [], date: new Date().toISOString() });
 
   readonly userProfile = computed(() => ({
@@ -85,6 +87,19 @@ export class DashboardComponent implements OnInit {
     dailyStatus: "You haven't run today.",
     connectionLabel: this.authService.isAuthenticated() ? 'Connected' : 'Not connected',
   }));
+
+  constructor() {
+    effect(() => {
+      const range = this.selectedRange();
+      const activity = this.selectedActivity();
+      const authenticated = this.authService.isAuthenticated();
+      if (authenticated) {
+        queueMicrotask(() => {
+          void this.loadAiInsights(range, activity);
+        });
+      }
+    });
+  }
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) {
@@ -95,11 +110,16 @@ export class DashboardComponent implements OnInit {
     this.activeSection.set(section);
 
     if (this.authService.isAuthenticated()) {
-      void this.authService.fetchProfile();
+      void this.authService.fetchProfile().then(() => {
+        queueMicrotask(() => {
+          const range = this.selectedRange();
+          const activity = this.selectedActivity();
+          void this.loadAiInsights(range, activity);
+        });
+      });
     }
 
     void this.loadDailyQuotes();
-    void this.loadAiInsights();
   }
 
   updateDateRange(range: DateRange): void {
@@ -147,23 +167,40 @@ export class DashboardComponent implements OnInit {
     this.dailyQuotes.set(response);
   }
 
-  private async loadAiInsights(): Promise<void> {
+  private async loadAiInsights(range: DateRange, activity: ProgressActivityType): Promise<void> {
     const token = this.authService.getToken();
     const stravaId = this.authService.getStravaId();
     if (!token || !stravaId) {
       return;
     }
 
+    this.isAiLoading.set(true);
+
     try {
+      let params = new HttpParams()
+        .set('strava_id', stravaId);
+
+      if (activity !== 'all') {
+        params = params.set('activity_type', activity);
+      }
+
+      if (range.start && range.end) {
+        params = params
+          .set('after', formatInputDate(range.start))
+          .set('before', formatInputDate(range.end));
+      }
+
       const response = await firstValueFrom(
         this.http.get<AiInsightResponse>('http://localhost:8000/api/insights/', {
           headers: new HttpHeaders({ Authorization: `Bearer ${token}` }),
-          params: new HttpParams().set('strava_id', stravaId),
+          params,
         }),
       );
       this.aiInsights.set(response);
     } catch {
       // keep default empty
+    } finally {
+      this.isAiLoading.set(false);
     }
   }
 
@@ -252,4 +289,11 @@ function sectionFromHash(hash: string): DashboardSection {
   }
 
   return 'dashboard';
+}
+
+function formatInputDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
