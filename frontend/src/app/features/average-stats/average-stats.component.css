@@ -8,6 +8,52 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+/* --- Skeleton loading --- */
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.skeleton-line {
+  background: color-mix(in srgb, var(--muted-foreground) 18%, transparent);
+  border-radius: 0.5rem;
+  height: 1rem;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-stat-card {
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: clamp(0.8rem, 1.6vw, 1.2rem);
+}
+
+.skeleton-stat-icon {
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+}
+
+.skeleton-stat-label {
+  width: 40%;
+  height: 0.7rem;
+}
+
+.skeleton-stat-value {
+  width: 55%;
+  height: 1.8rem;
+  margin-top: 0.4rem;
+}
+
+.skeleton-stat-sub {
+  width: 30%;
+  height: 0.75rem;
+}
+
 @media (max-width: 72rem) {
   .average-stats-grid {
     grid-template-columns: 1fr;

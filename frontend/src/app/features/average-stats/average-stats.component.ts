@@ -29,6 +29,7 @@ export class AverageStatsComponent {
   readonly range = input.required<DateRange>();
   readonly activity = input.required<ProgressActivityType>();
   readonly stats = signal<AverageStats>(EMPTY_AVERAGE_STATS);
+  readonly isLoading = signal(false);
 
   private requestId = 0;
 
@@ -46,6 +47,7 @@ export class AverageStatsComponent {
   private async loadStats(range: DateRange, activity: ProgressActivityType): Promise<void> {
     const currentRequestId = this.requestId + 1;
     this.requestId = currentRequestId;
+    this.isLoading.set(true);
 
     const stats = await firstValueFrom(this.averageStatsService.getAverageStats(range, activity));
 
@@ -54,5 +56,6 @@ export class AverageStatsComponent {
     }
 
     this.stats.set(stats);
+    this.isLoading.set(false);
   }
 }

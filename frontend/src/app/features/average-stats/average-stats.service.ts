@@ -43,10 +43,12 @@ export class AverageStatsService {
       return of(EMPTY_STATS);
     }
 
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('after', formatApiDate(range.start))
-      .set('before', formatApiDate(addDays(range.end, 1)))
-      .set('activity_type', activity);
+      .set('before', formatApiDate(addDays(range.end, 1)));
+    if (activity !== 'all') {
+      params = params.set('activity_type', activity);
+    }
 
     return this.http
       .get<SummaryResponse>(`${this.apiUrl}/summary`, {

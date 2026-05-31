@@ -139,6 +139,67 @@ h2 {
   padding: 0.7rem 1rem;
 }
 
+/* --- Skeleton loading --- */
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.skeleton-line {
+  background: color-mix(in srgb, var(--muted-foreground) 18%, transparent);
+  border-radius: 0.5rem;
+  height: 1rem;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-metric-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.skeleton-metric-card {
+  background: color-mix(in srgb, var(--secondary) 58%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 5rem;
+  padding: 1rem;
+}
+
+.skeleton-label {
+  width: 40%;
+  height: 0.7rem;
+}
+
+.skeleton-value {
+  width: 30%;
+  height: 1.4rem;
+  margin-top: auto;
+  align-self: flex-end;
+}
+
+.skeleton-encouragement {
+  width: 60%;
+  height: 2.8rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 82rem) {
+  .skeleton-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 42rem) {
+  .skeleton-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 82rem) {
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
