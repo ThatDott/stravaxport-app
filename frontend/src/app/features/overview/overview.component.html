@@ -18,94 +18,106 @@
     </div>
   </header>
 
-  <div class="metric-grid">
-    @for (metric of overview().metrics; track metric.key) {
-      <article class="metric-card" [attr.aria-label]="metric.label + ': ' + metric.value">
-        <div class="metric-label">
-          <span class="metric-icon" aria-hidden="true">
-            @switch (metric.key) {
-              @case ('activities') {
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M4 12h3l2-6 4 12 2-6h5" />
-                </svg>
-              }
-              @case ('distance') {
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M6 18c3-8 9 0 12-8" />
-                  <path d="M7 8v.01" />
-                  <path d="M17 16v.01" />
-                </svg>
-              }
-              @case ('moving-time') {
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <circle cx="12" cy="12" r="8" />
-                  <path d="M12 8v5l3 2" />
-                </svg>
-              }
-              @case ('avg-distance') {
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M6 18c3-8 9 0 12-8" />
-                  <path d="M7 8v.01" />
-                  <path d="M17 16v.01" />
-                </svg>
-              }
-              @case ('avg-time') {
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <circle cx="12" cy="12" r="8" />
-                  <path d="M12 8v5l3 2" />
-                </svg>
-              }
-              @case ('avg-pace') {
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M5 15a7 7 0 0 1 14 0" />
-                  <path d="m12 15 4-4" />
-                </svg>
-              }
-              @case ('avg-speed') {
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M5 15a7 7 0 0 1 14 0" />
-                  <path d="m12 15 4-4" />
-                </svg>
-              }
-              @case ('total-elevation') {
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="m4 18 7-13 9 13H4Z" />
-                </svg>
-              }
-              @case ('avg-elevation') {
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="m4 18 7-13 9 13H4Z" />
-                </svg>
-              }
-              @case ('avg-cadence') {
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M4 12h3l2-6 4 12 2-6h5" />
-                </svg>
-              }
-              @case ('days-active') {
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M8 14a4 4 0 1 0 8 0c0-3-4-8-4-8s-4 5-4 8Z" />
-                </svg>
-              }
-            }
-          </span>
-          <span>{{ metric.label }}</span>
+  @if (isLoading()) {
+    <div class="skeleton-metric-grid">
+      @for (_ of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]; track $index) {
+        <div class="skeleton-metric-card">
+          <div class="skeleton-line skeleton-label"></div>
+          <div class="skeleton-line skeleton-value"></div>
         </div>
-
-        <div class="metric-value-row">
-          <strong>{{ metric.value }}</strong>
-          @if (metric.trend === 'up') {
-            <span class="trend-icon" aria-label="Trending up">
-              <svg viewBox="0 0 24 24" focusable="false">
-                <path d="m5 15 4-4 4 4 6-7" />
-                <path d="M15 8h4v4" />
-              </svg>
+      }
+    </div>
+    <div class="skeleton-line skeleton-encouragement"></div>
+  } @else {
+    <div class="metric-grid">
+      @for (metric of overview().metrics; track metric.key) {
+        <article class="metric-card" [attr.aria-label]="metric.label + ': ' + metric.value">
+          <div class="metric-label">
+            <span class="metric-icon" aria-hidden="true">
+              @switch (metric.key) {
+                @case ('activities') {
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M4 12h3l2-6 4 12 2-6h5" />
+                  </svg>
+                }
+                @case ('distance') {
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M6 18c3-8 9 0 12-8" />
+                    <path d="M7 8v.01" />
+                    <path d="M17 16v.01" />
+                  </svg>
+                }
+                @case ('moving-time') {
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <circle cx="12" cy="12" r="8" />
+                    <path d="M12 8v5l3 2" />
+                  </svg>
+                }
+                @case ('avg-distance') {
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M6 18c3-8 9 0 12-8" />
+                    <path d="M7 8v.01" />
+                    <path d="M17 16v.01" />
+                  </svg>
+                }
+                @case ('avg-time') {
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <circle cx="12" cy="12" r="8" />
+                    <path d="M12 8v5l3 2" />
+                  </svg>
+                }
+                @case ('avg-pace') {
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M5 15a7 7 0 0 1 14 0" />
+                    <path d="m12 15 4-4" />
+                  </svg>
+                }
+                @case ('avg-speed') {
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M5 15a7 7 0 0 1 14 0" />
+                    <path d="m12 15 4-4" />
+                  </svg>
+                }
+                @case ('total-elevation') {
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="m4 18 7-13 9 13H4Z" />
+                  </svg>
+                }
+                @case ('avg-elevation') {
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="m4 18 7-13 9 13H4Z" />
+                  </svg>
+                }
+                @case ('avg-cadence') {
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M4 12h3l2-6 4 12 2-6h5" />
+                  </svg>
+                }
+                @case ('days-active') {
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M8 14a4 4 0 1 0 8 0c0-3-4-8-4-8s-4 5-4 8Z" />
+                  </svg>
+                }
+              }
             </span>
-          }
-        </div>
-      </article>
-    }
-  </div>
+            <span>{{ metric.label }}</span>
+          </div>
 
-  <p class="encouragement" role="status">{{ overview().encouragement }}</p>
+          <div class="metric-value-row">
+            <strong>{{ metric.value }}</strong>
+            @if (metric.trend === 'up') {
+              <span class="trend-icon" aria-label="Trending up">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="m5 15 4-4 4 4 6-7" />
+                  <path d="M15 8h4v4" />
+                </svg>
+              </span>
+            }
+          </div>
+        </article>
+      }
+    </div>
+
+    <p class="encouragement" role="status">{{ overview().encouragement }}</p>
+  }
 </section>

@@ -64,6 +64,7 @@ export class OverviewComponent {
     encouragement: '',
     metrics: [],
   });
+  readonly isLoading = signal(false);
 
   private requestId = 0;
 
@@ -85,10 +86,12 @@ export class OverviewComponent {
   private async loadOverview(range: DateRange, activity: ProgressActivityType): Promise<void> {
     const currentRequestId = this.requestId + 1;
     this.requestId = currentRequestId;
+    this.isLoading.set(true);
 
     const token = this.authService.getToken();
     if (!token) {
       this.overview.set(emptyOverview(activity, range));
+      this.isLoading.set(false);
       return;
     }
 
@@ -96,9 +99,10 @@ export class OverviewComponent {
       const after = formatApiDate(range.start);
       const before = formatApiDate(addDays(range.end, 1));
 
+      const activityParam = activity !== 'all' ? `&activity_type=${activity}` : '';
       const summary = await firstValueFrom(
         this.http.get<StravaActivitySummary>(
-          `http://localhost:8000/api/activities/summary?after=${after}&before=${before}&activity_type=${activity}`,
+          `http://localhost:8000/api/activities/summary?after=${after}&before=${before}${activityParam}`,
           { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) },
         ),
       );
@@ -108,12 +112,14 @@ export class OverviewComponent {
       }
 
       this.overview.set(buildOverviewFromSummary(summary, activity));
+      this.isLoading.set(false);
     } catch {
       if (currentRequestId !== this.requestId) {
         return;
       }
 
       this.overview.set(emptyOverview(activity, range));
+      this.isLoading.set(false);
     }
   }
 }

@@ -1,13 +1,34 @@
 <section class="average-stats-grid" aria-label="Average stats for selected date range">
-  <app-average-distance [activity]="activity()" [distanceKm]="stats().averageDistanceKm" />
-  <app-average-time
-    [activity]="activity()"
-    [minutes]="stats().averageTimeMinutes"
-    [activityCount]="stats().activityCount"
-  />
-  <app-average-elevation
-    [activity]="activity()"
-    [elevationM]="stats().totalElevationM"
-    [equivalentPercent]="stats().elevationEquivalentPercent"
-  />
+  @if (isLoading()) {
+    <div class="skeleton-stat-card">
+      <div class="skeleton-line skeleton-stat-icon"></div>
+      <div class="skeleton-line skeleton-stat-label"></div>
+      <div class="skeleton-line skeleton-stat-value"></div>
+      <div class="skeleton-line skeleton-stat-sub"></div>
+    </div>
+    <div class="skeleton-stat-card">
+      <div class="skeleton-line skeleton-stat-icon"></div>
+      <div class="skeleton-line skeleton-stat-label"></div>
+      <div class="skeleton-line skeleton-stat-value"></div>
+      <div class="skeleton-line skeleton-stat-sub"></div>
+    </div>
+    <div class="skeleton-stat-card">
+      <div class="skeleton-line skeleton-stat-icon"></div>
+      <div class="skeleton-line skeleton-stat-label"></div>
+      <div class="skeleton-line skeleton-stat-value"></div>
+      <div class="skeleton-line skeleton-stat-sub"></div>
+    </div>
+  } @else {
+    <app-average-distance [activity]="activity()" [distanceKm]="stats().averageDistanceKm" />
+    <app-average-time
+      [activity]="activity()"
+      [minutes]="stats().averageTimeMinutes"
+      [activityCount]="stats().activityCount"
+    />
+    <app-average-elevation
+      [activity]="activity()"
+      [elevationM]="stats().totalElevationM"
+      [equivalentPercent]="stats().elevationEquivalentPercent"
+    />
+  }
 </section>
