@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import type { DateRange } from '../calendar/calendar.component';
 import type { ProgressActivityType } from '../progress-graph/progress-graph.model';
 import type { ActivityDateGroup, ActivityItem } from './activities.model';
-import { ActivitiesService } from './activities.service';
+import { ActivitiesService, filterActivities, groupActivities } from './activities.service';
 
 @Component({
   selector: 'app-activities',
@@ -18,14 +18,20 @@ export class ActivitiesComponent {
   readonly range = input.required<DateRange>();
   readonly activity = input.required<ProgressActivityType>();
   readonly groups = signal<readonly ActivityDateGroup[]>([]);
+  readonly allActivities = signal<readonly ActivityItem[]>([]);
   readonly isExpanded = signal(false);
   readonly isLoading = signal(false);
+  readonly isLoadingMore = signal(false);
+  readonly currentPage = signal(1);
+  readonly hasMorePages = signal(true);
   readonly activityLabel = computed(() => formatActivityLabel(this.activity()));
   readonly subtitle = computed(() => `Grouped by date | ${formatDateRange(this.range())}`);
   readonly visibleGroups = computed(() =>
     this.isExpanded() ? this.groups() : this.groups().slice(0, this.initialVisibleDateGroups),
   );
-  readonly hasMoreGroups = computed(() => this.groups().length > this.initialVisibleDateGroups);
+  readonly hasMoreGroups = computed(
+    () => this.hasMorePages() || this.groups().length > this.initialVisibleDateGroups,
+  );
   readonly toggleLabel = computed(() => (this.isExpanded() ? 'See less' : 'See more'));
 
   private requestId = 0;
@@ -37,6 +43,9 @@ export class ActivitiesComponent {
 
       queueMicrotask(() => {
         this.isExpanded.set(false);
+        this.currentPage.set(1);
+        this.allActivities.set([]);
+        this.hasMorePages.set(true);
         void this.loadActivities(range, activity);
       });
     });
@@ -76,7 +85,12 @@ export class ActivitiesComponent {
   }
 
   toggleExpanded(): void {
-    this.isExpanded.update((isExpanded) => !isExpanded);
+    if (!this.isExpanded()) {
+      this.isExpanded.set(true);
+      void this.loadMore();
+    } else {
+      this.isExpanded.set(false);
+    }
   }
 
   private async loadActivities(range: DateRange, activity: ProgressActivityType): Promise<void> {
@@ -84,14 +98,44 @@ export class ActivitiesComponent {
     this.requestId = currentRequestId;
     this.isLoading.set(true);
 
-    const groups = await firstValueFrom(this.activitiesService.getActivityGroups(range, activity));
+    const result = await firstValueFrom(
+      this.activitiesService.getActivityPages(range, activity, 1, 30),
+    );
 
     if (currentRequestId !== this.requestId) {
       return;
     }
 
-    this.groups.set(groups);
+    this.allActivities.set(result.activities);
+    this.hasMorePages.set(result.hasMore);
+    this.currentPage.set(1);
+    this.groups.set(groupActivities(filterActivities(result.activities, activity)));
     this.isLoading.set(false);
+  }
+
+  private async loadMore(): Promise<void> {
+    if (this.isLoadingMore() || !this.hasMorePages()) {
+      return;
+    }
+
+    this.isLoadingMore.set(true);
+
+    const nextPage = this.currentPage() + 1;
+    const result = await firstValueFrom(
+      this.activitiesService.getActivityPages(this.range(), this.activity(), nextPage, 30),
+    );
+
+    if (result.activities.length === 0) {
+      this.hasMorePages.set(false);
+      this.isLoadingMore.set(false);
+      return;
+    }
+
+    this.allActivities.update((prev) => [...prev, ...result.activities]);
+    this.hasMorePages.set(result.hasMore);
+    this.currentPage.set(nextPage);
+    this.groups.set(groupActivities(filterActivities(this.allActivities(), this.activity())));
+    this.isLoadingMore.set(false);
   }
 }
 

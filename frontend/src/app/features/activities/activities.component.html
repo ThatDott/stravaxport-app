@@ -83,9 +83,10 @@
           type="button"
           class="see-more-button"
           [attr.aria-expanded]="isExpanded()"
+          [disabled]="isLoadingMore()"
           (click)="toggleExpanded()"
         >
-          {{ toggleLabel() }}
+          {{ isLoadingMore() ? 'Loading...' : toggleLabel() }}
         </button>
       }
     } @else {
