@@ -19,8 +19,8 @@
         <button
           type="button"
           class="stat-toggle"
-          [class.enabled-toggle]="isEnabled(option.key)"
-          [attr.aria-pressed]="isEnabled(option.key)"
+          [class.enabled-toggle]="stats()[option.key]"
+          [attr.aria-pressed]="stats()[option.key]"
           (click)="toggleStat(option.key)"
         >
           <span>{{ option.label }}</span>
@@ -56,8 +56,8 @@
       <button
         type="button"
         class="stat-toggle"
-        [class.enabled-toggle]="isStyleEnabled('plainStats')"
-        [attr.aria-pressed]="isStyleEnabled('plainStats')"
+        [class.enabled-toggle]="styleOptions().plainStats"
+        [attr.aria-pressed]="styleOptions().plainStats"
         (click)="toggleStyle('plainStats')"
       >
         <span>Plain Stats</span>
@@ -69,8 +69,8 @@
       <button
         type="button"
         class="stat-toggle"
-        [class.enabled-toggle]="isStyleEnabled('compactStats')"
-        [attr.aria-pressed]="isStyleEnabled('compactStats')"
+        [class.enabled-toggle]="styleOptions().compactStats"
+        [attr.aria-pressed]="styleOptions().compactStats"
         (click)="toggleStyle('compactStats')"
       >
         <span>Compact Stats</span>
@@ -98,27 +98,27 @@
     <div class="export-preview">
       <div class="preview-topline">
         <span>StravaXport</span>
-        @if (isEnabled('stravaLogo')) {
+        @if (stats().stravaLogo) {
           <img class="strava-logo" src="/strava-logo.png" alt="Strava" />
         }
       </div>
 
-      @if (isEnabled('userName')) {
+      @if (stats().userName) {
         <h3>{{ username() }}</h3>
       }
 
-      @if (isEnabled('dateRange')) {
+      @if (stats().dateRange) {
         <p class="preview-range">{{ dateRangeLabel() }}</p>
       }
 
-      @if (isEnabled('activityType')) {
+      @if (stats().activityType) {
         <p class="activity-pill">{{ activityLabel() }}</p>
       }
 
       <div
         class="metric-grid"
-        [class.plain-metric-grid]="isStyleEnabled('plainStats')"
-        [class.compact-metric-grid]="isStyleEnabled('compactStats')"
+        [class.plain-metric-grid]="styleOptions().plainStats"
+        [class.compact-metric-grid]="styleOptions().compactStats"
       >
         @for (metric of previewMetrics(); track metric.label) {
           <div class="metric-card">
@@ -128,12 +128,12 @@
         }
       </div>
 
-      @if (isEnabled('geographicalData') && displayGeoNote()) {
+      @if (stats().geographicalData && displayGeoNote()) {
         <p class="geo-note">{{ displayGeoNote() }}</p>
       }
 
       @if (quote(); as dailyQuote) {
-        @if (isEnabled('motivationalQuote')) {
+        @if (stats().motivationalQuote) {
           <blockquote>{{ dailyQuote.text }}</blockquote>
         }
       }
