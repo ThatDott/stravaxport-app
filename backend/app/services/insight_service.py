@@ -172,20 +172,18 @@ Return only a JSON object with exactly these two keys. No preamble, no explanati
           4. If Gemini fails - return fallback message.
         """
 
-        # Step 1 - Check cache (skip when date-range params are provided,
-        #           because the cached insight is always for the full history)
-        use_cache = after is None and before is None and activity_type is None
-
-        if use_cache:
-            cached = await crud.get_cached_insight(db, strava_id)
-            if cached and cached.is_valid:
-                payload = cached.insights
-                return InsightResponse(
-                    insights=payload["insights"],
-                    geo_comparison=payload["geo_comparison"],
-                    generated_at=cached.generated_at,
-                    from_cache=True
-                )
+        # Step 1 - Check cache — always serve a valid cached insight regardless
+        # of date range, to avoid hitting Gemini's aggressive free-tier rate limits.
+        # The cache is invalidated by sync_activities_to_db when new activities land.
+        cached = await crud.get_cached_insight(db, strava_id)
+        if cached and cached.is_valid:
+            payload = cached.insights
+            return InsightResponse(
+                insights=payload["insights"],
+                geo_comparison=payload["geo_comparison"],
+                generated_at=cached.generated_at,
+                from_cache=True
+            )
 
         # Step 2 - Fetch activity summary with date range support
         try:
@@ -318,9 +316,19 @@ Return only a JSON object with exactly these two keys. No preamble, no explanati
 
         except Exception:
             import traceback
-            # Gemini is unavailable, API key is missing, or response could not be parsed.
-            # Return a neutral fallback - do not expose internal error details to the user.
             print(f"[insight_service] Gemini call failed: {traceback.format_exc()}", flush=True)
+
+            # Try to serve stale cache instead of the generic "try again" fallback
+            if cached:
+                payload = cached.insights
+                return InsightResponse(
+                    insights=payload["insights"],
+                    geo_comparison=payload["geo_comparison"],
+                    generated_at=cached.generated_at,
+                    from_cache=True
+                )
+
+            # No cache at all — return neutral fallback
             return InsightResponse(
                 insights=[FALLBACK_INSIGHT],
                 geo_comparison=FALLBACK_GEO,
