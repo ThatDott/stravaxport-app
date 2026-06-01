@@ -41,7 +41,28 @@ The project follows **Service-Oriented Architecture (SOA)** principles:
 - (Optional) [API-Ninjas](https://api-ninjas.com/) API key for motivational quotes
 - (Optional) [Google AI Studio](https://aistudio.google.com/) API key for AI-powered insights
 
-> **Important:** The Strava API only allows **one athlete per application** in development mode. Each person setting up this project must create their own Strava API application at [https://www.strava.com/settings/api](https://www.strava.com/settings/api) to get their own `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET`. Set the "Authorization Callback Domain" in your Strava app settings to `localhost`.
+## Strava API Setup
+
+### Create a Strava API Application
+
+1. Sign in to your Strava account.
+2. Go to the Strava API settings page: [https://www.strava.com/settings/api](https://www.strava.com/settings/api)
+3. Click **Create Your Application** and fill in the following:
+
+| Field | Value |
+|-------|-------|
+| Application Name | `StravaXport` |
+| Category | `Visualizer` |
+| Website | `http://localhost:4200` |
+| Authorization Callback Domain | `localhost` |
+
+4. Agree to the terms and save.
+
+### Get Your API Credentials
+
+After creating the application, Strava will generate a **Client ID** and **Client Secret**. Copy these — you'll need them for the environment setup below.
+
+> **Important:** The Strava API only allows **one athlete per application** in development mode. Each person setting up this project must create their own application.
 
 ## Environment Variables
 
@@ -52,20 +73,22 @@ Copy this template into `backend/.env` and fill in your values:
 PROJECT_NAME=Stravaxport API
 VERSION=1.0.0
 
-# Strava OAuth — required, get yours at https://www.strava.com/settings/api
+# Strava OAuth — get yours at https://www.strava.com/settings/api
 STRAVA_CLIENT_ID=your_strava_client_id
 STRAVA_CLIENT_SECRET=your_strava_client_secret
-# Override for production deployment (defaults to http://localhost:4200/auth/callback)
+# For Testing Environment
+STRAVA_REDIRECT_URI=http://localhost:4200/auth/callback
+# For Production
 # STRAVA_REDIRECT_URI=https://your-domain.com/auth/callback
 
-# Database — required, must match docker-compose.yml
+# Database
 DATABASE_URL=postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/stravaxport
 
-# Quotes (API-Ninjas) — optional, leave commented out to skip
-# QUOTES_API_URL=https://api.api-ninjas.com/v2/randomquotes?category=happiness&categories=inspirational%2C+nature%2C+courage
-# QUOTES_API_KEY=your_quotes_api_key
+# Quotes (API-Ninjas) - get API key at https://api-ninjas.com/
+QUOTES_API_URL=https://api.api-ninjas.com/v2/randomquotes?category=happiness&categories=inspirational%2C+nature%2C+courage
+QUOTES_API_KEY=your_quotes_api_key
 
-# AI Insights (Google Gemini) — optional, leave commented out for rule-based fallback
+# AI Insights (Google Gemini) — get API key at https://aistudio.google.com/
 # GEMINI_API_KEY=your_gemini_api_key
 # GEMINI_MODEL=gemini-2.5-flash
 # INSIGHTS_MAX_TOKENS=8192
