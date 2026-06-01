@@ -16,7 +16,7 @@ While Strava provides excellent data tracking, its visualization options are oft
 | **Frontend** | Angular 21 (TypeScript, Signals, OnPush CD) |
 | **Backend** | Python 3.12 (FastAPI, SQLAlchemy async) |
 | **Database** | PostgreSQL 16 |
-| **Auth** | Strava OAuth 2.0 & JWT |
+| **Auth** | Strava OAuth 2.0 (bearer token passthrough) |
 | **AI** | Google Gemini 2.5 Flash |
 | **Deployment** | Vercel / Render |
 
@@ -31,13 +31,15 @@ While Strava provides excellent data tracking, its visualization options are oft
 The project follows **Service-Oriented Architecture (SOA)** principles:
 1. **Loose Coupling:** Independent services for data retrieval, AI processing, and image rendering.
 2. **Service Composition:** Combines Strava API, Quote APIs, and internal Geo-services.
-3. **Statelessness:** Uses JWT for session management.
+3. **Statelessness:** Uses Strava OAuth bearer token for API auth.
 
 ## Prerequisites
 - Python 3.12+
 - Node.js & npm
 - Docker & Docker Compose
 - A [Strava API application](https://www.strava.com/settings/api) (free)
+- (Optional) [API-Ninjas](https://api-ninjas.com/) API key for motivational quotes
+- (Optional) [Google AI Studio](https://aistudio.google.com/) API key for AI-powered insights
 
 > **Important:** The Strava API only allows **one athlete per application** in development mode. Each person setting up this project must create their own Strava API application at [https://www.strava.com/settings/api](https://www.strava.com/settings/api) to get their own `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET`. Set the "Authorization Callback Domain" in your Strava app settings to `localhost`.
 
@@ -53,40 +55,35 @@ VERSION=1.0.0
 # Strava OAuth — required, get yours at https://www.strava.com/settings/api
 STRAVA_CLIENT_ID=your_strava_client_id
 STRAVA_CLIENT_SECRET=your_strava_client_secret
-# Defaults to http://localhost:4200/auth/callback — change for production
-# STRAVA_REDIRECT_URI=http://localhost:4200/auth/callback
-
-# JWT — required, generate a random secret
-SECRET_KEY=generate_a_random_secret_key_here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+# Override for production deployment (defaults to http://localhost:4200/auth/callback)
+# STRAVA_REDIRECT_URI=https://your-domain.com/auth/callback
 
 # Database — required, must match docker-compose.yml
 DATABASE_URL=postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/stravaxport
 
-# Quotes (API-Ninjas) — optional, leave empty to skip
-QUOTES_API_URL=https://api.api-ninjas.com/v2/quotes
-QUOTES_API_KEY=your_quotes_api_key
+# Quotes (API-Ninjas) — optional, leave commented out to skip
+# QUOTES_API_URL=https://api.api-ninjas.com/v2/randomquotes?category=happiness&categories=inspirational%2C+nature%2C+courage
+# QUOTES_API_KEY=your_quotes_api_key
 
-# AI Insights (Google Gemini) — optional, leave empty for rule-based fallback
-GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-2.5-flash
-INSIGHTS_MAX_TOKENS=8192
-INSIGHTS_MAX_ACTIVITIES=50
+# AI Insights (Google Gemini) — optional, leave commented out for rule-based fallback
+# GEMINI_API_KEY=your_gemini_api_key
+# GEMINI_MODEL=gemini-2.5-flash
+# INSIGHTS_MAX_TOKENS=8192
+# INSIGHTS_MAX_ACTIVITIES=50
 ```
 
-| Variable | Required | Description |
-| :--- | :---: | :--- |
-| `STRAVA_CLIENT_ID` | Yes | From your Strava API app settings |
-| `STRAVA_CLIENT_SECRET` | Yes | From your Strava API app settings |
-| `STRAVA_REDIRECT_URI` | No | Default: `http://localhost:4200/auth/callback`. Set to your deployed frontend URL in production |
-| `SECRET_KEY` | Yes | Random string for JWT signing (e.g. `openssl rand -hex 32`) |
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `QUOTES_API_KEY` | No | [API-Ninjas](https://api-ninjas.com/) key for motivational quotes |
-| `GEMINI_API_KEY` | No | [Google AI Studio](https://aistudio.google.com/) key for AI insights |
-| `GEMINI_MODEL` | No | Default: `gemini-2.5-flash` |
-| `INSIGHTS_MAX_TOKENS` | No | Default: `8192` (increase if Gemini truncates output) |
-| `INSIGHTS_MAX_ACTIVITIES` | No | Default: `50` (max activities sent to Gemini per request) |
+| Variable | Required | Default | Description |
+| :--- | :---: | :--- | :--- |
+| `STRAVA_CLIENT_ID` | Yes | — | From your Strava API app settings |
+| `STRAVA_CLIENT_SECRET` | Yes | — | From your Strava API app settings |
+| `STRAVA_REDIRECT_URI` | No | `http://localhost:4200/auth/callback` | Set to your deployed frontend URL in production |
+| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
+| `QUOTES_API_KEY` | No | `""` | [API-Ninjas](https://api-ninjas.com/) key for motivational quotes |
+| `QUOTES_API_URL` | No | `""` | API-Ninjas endpoint for quotes |
+| `GEMINI_API_KEY` | No | `""` | [Google AI Studio](https://aistudio.google.com/) key for AI insights |
+| `GEMINI_MODEL` | No | `gemini-2.5-flash` | Gemini model version |
+| `INSIGHTS_MAX_TOKENS` | No | `8192` | Max output tokens for Gemini |
+| `INSIGHTS_MAX_ACTIVITIES` | No | `50` | Max activities sent to Gemini per request |
 
 ## Running the Project
 
@@ -121,7 +118,7 @@ The system exposes a RESTful interface documented via Swagger/OpenAPI.
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/auth/strava/login` | Initiate Strava OAuth flow |
-| `GET` | `/activities` | List user activities (JWT required) |
+| `GET` | `/activities` | List user activities (Strava token required) |
 | `GET` | `/activities/{id}/comparisons` | Fetch geographical landmark comparisons |
 | `POST` | `/export/image` | Generate shareable PNG export |
 

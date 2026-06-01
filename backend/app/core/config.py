@@ -12,22 +12,17 @@ class Settings(BaseSettings):
     STRAVA_CLIENT_SECRET: str
     STRAVA_REDIRECT_URI: str = "http://localhost:4200/auth/callback"
 
-    # JWT
-    SECRET_KEY: str
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-
     # Database
     DATABASE_URL: str
 
-    # Quotes
-    QUOTES_API_URL: str
-    QUOTES_API_KEY: str
+    # Quotes — optional, leave empty to skip
+    QUOTES_API_URL: str = ""
+    QUOTES_API_KEY: str = ""
 
-    # AI Insights
+    # AI Insights — optional, leave GEMINI_API_KEY empty for rule-based fallback
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.0-flash"
-    INSIGHTS_MAX_TOKENS: int = 500
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    INSIGHTS_MAX_TOKENS: int = 8192
     INSIGHTS_MAX_ACTIVITIES: int = 50
 
     class Config:
