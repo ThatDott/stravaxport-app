@@ -51,7 +51,7 @@ The project follows **Service-Oriented Architecture (SOA)** principles:
 
 | Field | Value |
 |-------|-------|
-| Application Name | `StravaXport` |
+| Application Name | `StravaXport` or Anything |
 | Category | `Visualizer` |
 | Website | `http://localhost:4200` |
 | Authorization Callback Domain | `localhost` |
@@ -76,23 +76,15 @@ VERSION=1.0.0
 # Strava OAuth — get yours at https://www.strava.com/settings/api
 STRAVA_CLIENT_ID=your_strava_client_id
 STRAVA_CLIENT_SECRET=your_strava_client_secret
-# For Testing Environment
-STRAVA_REDIRECT_URI=http://localhost:4200/auth/callback
-# For Production
-# STRAVA_REDIRECT_URI=https://your-domain.com/auth/callback
 
 # Database
 DATABASE_URL=postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/stravaxport
 
 # Quotes (API-Ninjas) - get API key at https://api-ninjas.com/
-QUOTES_API_URL=https://api.api-ninjas.com/v2/randomquotes?category=happiness&categories=inspirational%2C+nature%2C+courage
 QUOTES_API_KEY=your_quotes_api_key
 
 # AI Insights (Google Gemini) — get API key at https://aistudio.google.com/
-# GEMINI_API_KEY=your_gemini_api_key
-# GEMINI_MODEL=gemini-2.5-flash
-# INSIGHTS_MAX_TOKENS=8192
-# INSIGHTS_MAX_ACTIVITIES=50
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 | Variable | Required | Default | Description |
@@ -102,7 +94,6 @@ QUOTES_API_KEY=your_quotes_api_key
 | `STRAVA_REDIRECT_URI` | No | `http://localhost:4200/auth/callback` | Set to your deployed frontend URL in production |
 | `DATABASE_URL` | Yes | — | PostgreSQL connection string |
 | `QUOTES_API_KEY` | No | `""` | [API-Ninjas](https://api-ninjas.com/) key for motivational quotes |
-| `QUOTES_API_URL` | No | `""` | API-Ninjas endpoint for quotes |
 | `GEMINI_API_KEY` | No | `""` | [Google AI Studio](https://aistudio.google.com/) key for AI insights |
 | `GEMINI_MODEL` | No | `gemini-2.5-flash` | Gemini model version |
 | `INSIGHTS_MAX_TOKENS` | No | `8192` | Max output tokens for Gemini |

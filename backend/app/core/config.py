@@ -15,11 +15,11 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str
 
-    # Quotes — optional, leave empty to skip
-    QUOTES_API_URL: str = ""
+    # Quotes
+    QUOTES_API_URL: str = "https://api.api-ninjas.com/v2/randomquotes?category=happiness&categories=inspirational%2C+nature%2C+courage"
     QUOTES_API_KEY: str = ""
 
-    # AI Insights — optional, leave GEMINI_API_KEY empty for rule-based fallback
+    # AI Insights
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.5-flash"
     INSIGHTS_MAX_TOKENS: int = 8192
