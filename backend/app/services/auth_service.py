@@ -14,7 +14,7 @@ class AuthService:
         base_url = "https://www.strava.com/oauth/authorize"
         params = {
             "client_id": settings.STRAVA_CLIENT_ID,
-            "redirect_uri": settings.STRAVA_REDIRECT_URI,
+            "redirect_uri": "http://localhost:4200/auth/callback",
             "response_type": "code",
             "approval_prompt": "force",
             "scope": "read,activity:read_all,profile:read_all" 
