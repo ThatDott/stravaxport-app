@@ -41,6 +41,9 @@ class QuoteService:
     
     @staticmethod
     async def _fetch_quote_from_api():
+        if not settings.QUOTES_API_KEY or not settings.QUOTES_API_URL:
+            return {"quote": "Stay motivated and keep moving!", "author": "StravaXport"}
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 settings.QUOTES_API_URL,
@@ -48,7 +51,7 @@ class QuoteService:
             )
             response.raise_for_status()
             data = response.json()
-            
+
             quote_item = data[0]
             return {
                 "quote": quote_item.get("quote", "Stay motivated!"),
