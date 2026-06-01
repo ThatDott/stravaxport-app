@@ -39,7 +39,7 @@ The project follows **Service-Oriented Architecture (SOA)** principles:
 - Docker & Docker Compose
 - A [Strava API application](https://www.strava.com/settings/api) (free)
 
-> **Important:** The Strava API only allows **one athlete per application** in development mode. Each person setting up this project must create their own Strava API application at [https://www.strava.com/settings/api](https://www.strava.com/settings/api) to get their own `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET`.
+> **Important:** The Strava API only allows **one athlete per application** in development mode. Each person setting up this project must create their own Strava API application at [https://www.strava.com/settings/api](https://www.strava.com/settings/api) to get their own `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET`. Set the "Authorization Callback Domain" in your Strava app settings to `localhost`.
 
 ## Environment Variables
 
@@ -51,9 +51,9 @@ PROJECT_NAME=Stravaxport API
 VERSION=1.0.0
 
 # Strava OAuth — required, get yours at https://www.strava.com/settings/api
+# The redirect URI is hardcoded to http://localhost:4200/auth/callback in the source
 STRAVA_CLIENT_ID=your_strava_client_id
 STRAVA_CLIENT_SECRET=your_strava_client_secret
-STRAVA_REDIRECT_URI=http://localhost:4200/auth/callback
 
 # JWT — required, generate a random secret
 SECRET_KEY=generate_a_random_secret_key_here
@@ -78,7 +78,6 @@ INSIGHTS_MAX_ACTIVITIES=50
 | :--- | :---: | :--- |
 | `STRAVA_CLIENT_ID` | Yes | From your Strava API app settings |
 | `STRAVA_CLIENT_SECRET` | Yes | From your Strava API app settings |
-| `STRAVA_REDIRECT_URI` | Yes | Must match the callback URL in your Strava app settings |
 | `SECRET_KEY` | Yes | Random string for JWT signing (e.g. `openssl rand -hex 32`) |
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `QUOTES_API_KEY` | No | [API-Ninjas](https://api-ninjas.com/) key for motivational quotes |
