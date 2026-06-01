@@ -51,9 +51,10 @@ PROJECT_NAME=Stravaxport API
 VERSION=1.0.0
 
 # Strava OAuth — required, get yours at https://www.strava.com/settings/api
-# The redirect URI is hardcoded to http://localhost:4200/auth/callback in the source
 STRAVA_CLIENT_ID=your_strava_client_id
 STRAVA_CLIENT_SECRET=your_strava_client_secret
+# Defaults to http://localhost:4200/auth/callback — change for production
+# STRAVA_REDIRECT_URI=http://localhost:4200/auth/callback
 
 # JWT — required, generate a random secret
 SECRET_KEY=generate_a_random_secret_key_here
@@ -78,6 +79,7 @@ INSIGHTS_MAX_ACTIVITIES=50
 | :--- | :---: | :--- |
 | `STRAVA_CLIENT_ID` | Yes | From your Strava API app settings |
 | `STRAVA_CLIENT_SECRET` | Yes | From your Strava API app settings |
+| `STRAVA_REDIRECT_URI` | No | Default: `http://localhost:4200/auth/callback`. Set to your deployed frontend URL in production |
 | `SECRET_KEY` | Yes | Random string for JWT signing (e.g. `openssl rand -hex 32`) |
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `QUOTES_API_KEY` | No | [API-Ninjas](https://api-ninjas.com/) key for motivational quotes |

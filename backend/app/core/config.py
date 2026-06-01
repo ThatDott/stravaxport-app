@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     # Strava OAuth
     STRAVA_CLIENT_ID: str
     STRAVA_CLIENT_SECRET: str
+    STRAVA_REDIRECT_URI: str = "http://localhost:4200/auth/callback"
 
     # JWT
     SECRET_KEY: str
